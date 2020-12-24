@@ -2,8 +2,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
 import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
 import { Component, OnInit } from '@angular/core';
-import { Customer, Representative } from "./customer";
-import { CustomerService } from "./customerservice";
 import { MessageService } from "primeng/api";
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -24,8 +22,6 @@ export class DeclarationRecolteComponent implements OnInit {
 
   //declaration des variables 
   forEdit = false
-  customers: Customer[];
-  representatives: Representative[];
   statuses: any[];
   loading: boolean = true;
   activityValues: number[] = [0, 100];
@@ -324,7 +320,6 @@ export class DeclarationRecolteComponent implements OnInit {
       this.parcelles.splice(this.parcelles.indexOf(parcelle),1)
     }
   }
-
   //pour afficher, vider et masquer le formulaire 
   showForm(){
       this.declaration={date_recolte : new Date(),observations:null}

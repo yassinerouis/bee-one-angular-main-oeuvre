@@ -1,4 +1,3 @@
-import { CustomerService } from './declaration-recolte/customerservice';
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { DeclarationRecolteComponent } from './declaration-recolte/declaration-recolte.component';
@@ -55,7 +54,7 @@ const routes: Routes = [
     MessageModule,
     MessagesModule
   ],
-  providers: [CustomerService,DatePipe,CookieService],
+  providers: [DatePipe,CookieService],
   exports:[TranslateModule]
 })
 export class RendementModule { }
