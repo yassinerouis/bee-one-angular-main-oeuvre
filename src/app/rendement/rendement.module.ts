@@ -24,6 +24,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {MessagesModule} from 'primeng/messages';
 import {MessageModule} from 'primeng/message';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+import {CookieService} from 'ngx-cookie-service';
 const routes: Routes = [
   { path: 'declaration-recolte', component: DeclarationRecolteComponent }
 ]
@@ -54,7 +55,7 @@ const routes: Routes = [
     MessageModule,
     MessagesModule
   ],
-  providers: [CustomerService,DatePipe],
+  providers: [CustomerService,DatePipe,CookieService],
   exports:[TranslateModule]
 })
 export class RendementModule { }

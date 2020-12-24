@@ -68,6 +68,7 @@ export class AppComponent implements OnInit{
     });
   }
   ngOnInit() {
+    //si la langue est arabe afficher le contenu du droit à gauche sinon de la gauche à groite (rtl: right to left),(ltr:left to right)
     if(localStorage.getItem('lang')=='ar'){
       document.getElementsByTagName('html')[0].setAttribute('dir', 'rtl');
     }else{

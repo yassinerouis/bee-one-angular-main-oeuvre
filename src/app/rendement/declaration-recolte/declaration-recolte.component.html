@@ -1,3 +1,6 @@
+<!--
+  Tableau qui affiche les Déclaration de la récolte
+-->
 <div *ngIf="!form && !synthetique" >
   <div class="page-header">
     <h3 class="page-title">
@@ -37,7 +40,7 @@
           <th>
             <div class="p-d-flex p-jc-between p-ai-center">
               Parcelles
-              <p-columnFilter type="number" field="parcelles" display="menu"></p-columnFilter>
+              <p-columnFilter type="numeric" field="parcelles" display="menu"></p-columnFilter>
             </div>
           </th>
           <th>
@@ -115,6 +118,9 @@
     </p-table>
   </div>
   </div>
+  <!--
+  Tableau qui affiche le détail des Déclarations de la récolte
+  -->
   <div *ngIf="synthetique" >
     <div class="page-header">
   <h3 class="page-title">
@@ -220,6 +226,9 @@
   </p-table>
 </div>
 </div>
+<!--
+  Formulaire d'ajout + modification
+-->
   <div *ngIf="form && !synthetique">
     <div class="text-right">
       <button type="button" pButton pRipple icon="pi pi-times" (click)="form=!form" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
@@ -252,7 +261,7 @@
 
             <div class="row" style="background-color:#F7F7F7; padding-top: 17px; border-radius:5px; margin-bottom: 10px;">
               <div class="col-md-2">Parcelle</div>
-              <div class="col-md">Type de produit</div>
+              <div *ngIf="!forEdit" class="col-md">Type de produit</div>
               <div class="col-md">Récolte MO (kg)</div>
               <div class="col-md">Récolte hors MO</div>
               <div class="col-md">Vente sur pieds</div>
@@ -274,7 +283,7 @@
                   </ng-template>
                 </p-dropdown>
               </div>
-              <div class="col-md" style="padding-top:10px;">{{parcelle.type}}</div>
+              <div *ngIf="!forEdit" class="col-md" style="padding-top:10px;">{{parcelle.type}}</div>
               <div class="col-md">
                 <p-inputNumber [min]="0"  mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
               </div>
@@ -293,7 +302,7 @@
                 <p-inputNumber [(ngModel)]="parcelle.Solde" [minFractionDigits]="2" mode="decimal" class="p-inputtext-sm"  [min]="0" ></p-inputNumber>
               </div>
               <div class="col-md">
-                  <button pButton pRipple type="button" icon="pi pi-minus" class="p-button-rounded p-button-warning" (click)="removeItem(parcelle)"></button>
+                  <button pButton pRipple type="button" icon="pi pi-minus" class="p-button-rounded p-button-warning mr-1" (click)="removeItem(parcelle)"></button>
                   <button *ngIf="last" pButton pRipple type="button" icon="pi pi-plus"  (click)="addItem()" class="p-button-rounded p-button-info"></button>  
               </div>
             </div>
@@ -302,7 +311,8 @@
       </div>
     </div>
     <div class="text-right">
-      <button pButton pRipple type="button" (click)="save()" label="Enregistrer" class="p-button-raised p-button-primary"></button>
-      <button pButton pRipple type="button" label="Annuler" class="p-button-raised p-button-secondary"></button>
+      <button *ngIf="forEdit" pButton pRipple type="button" (click)="update()" label="Modifier" class="p-button-raised p-button-warning"></button>
+      <button *ngIf="!forEdit" pButton pRipple type="button" (click)="save()" label="Enregistrer" class="p-button-raised p-button-primary"></button>
+      <button pButton pRipple type="button" (click)="cancel()" label="Annuler" class="p-button-raised p-button-secondary ml-1"></button>
     </div>
   </div>

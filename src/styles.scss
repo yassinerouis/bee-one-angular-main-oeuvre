@@ -14,8 +14,27 @@
 
 /* === Icon fonts === */
 @import "~@mdi/font/scss/materialdesignicons";
-
-
+.p-megamenu {
+    background: #fff !important;
+    border: 0px !important;
+}
+.p-column-filter-menu-button {
+    width: 1rem !important;
+}
+.p-datatable .p-datatable-thead > tr > th {
+    padding: 0.5rem 0.5rem !important;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.5rem 0.5rem !important;
+}
+.p-datatable .p-datatable-header {
+    padding: 0.5rem 0.5rem !important;
+  }
+  .p-inputtext-sm .p-inputtext {
+    font-size: 0.875rem;
+    padding: 0.4375rem 0.4375rem;
+    width: 80% !important;
+}
 /* === Template mixins === */
 @import "./assets/scss/mixins/animation";
 @import "./assets/scss/mixins/badges";

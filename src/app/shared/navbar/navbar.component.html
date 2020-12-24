@@ -8,11 +8,24 @@
     </button>
     <div class="search-field d-none d-md-block">
       <div class="d-flex align-items-center h-100" action="#">
-        <div class="input-group">
-          <button class="btn btn btn-outline-info btn-sm">Fertilisation</button>
-        </div>
-        <div class="input-group">
-          <button class="btn btn btn-outline-info btn-sm">Irrigation</button>
+        <div class="nav-item nav-profile dropdown" ngbDropdown>
+          <p-megaMenu [model]="[
+          {
+              label: 'Raccourcis', icon: 'pi pi-eye',
+              items: [
+                  [
+                      {
+                          label: 'Fertilisation',
+                          items: [{label: 'Ajouter nouveau'}, {label: 'Consulter'}]
+                      },
+                      {
+                          label: 'Irrigation',
+                          items: [{label: 'Modifier valeurs'}, {label: 'Vue sythètique'}]
+                      }
+                  ]
+              ]
+          }]"></p-megaMenu>
+
         </div>
       </div>
     </div>

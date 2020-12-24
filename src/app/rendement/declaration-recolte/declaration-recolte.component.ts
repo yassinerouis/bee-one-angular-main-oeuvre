@@ -1,3 +1,4 @@
+import { CookieService } from 'ngx-cookie-service';
 import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
 import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
 import { Component, OnInit } from '@angular/core';
@@ -9,8 +10,6 @@ import 'jspdf-autotable'
 import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
-import { elementEventFullName } from '@angular/compiler/src/view_compiler/view_compiler';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
  // Ce Component sert à la gestion de la declaration de la recolte
 
@@ -24,7 +23,7 @@ const doc = new jsPDF()
 export class DeclarationRecolteComponent implements OnInit {
 
   //declaration des variables 
-
+  forEdit = false
   customers: Customer[];
   representatives: Representative[];
   statuses: any[];
@@ -32,6 +31,7 @@ export class DeclarationRecolteComponent implements OnInit {
   activityValues: number[] = [0, 100];
   currentDate = new Date()
   listParcelles=[]
+  id
   parcelles=[{
     id:1,
     ID_Parcelle_Culturale:null,
@@ -43,12 +43,17 @@ export class DeclarationRecolteComponent implements OnInit {
     QteTotale:null
   }]
   msgs=[]
+  detailsDeclarations:any
+  declarations:any
   declaration={date_recolte : new Date(),observations:null}
   synthetique = false
   form=false;
-  constructor(public datepipe: DatePipe,private customerService: CustomerService,private exportService:ExportService,
+
+  constructor(public datepipe: DatePipe,private cookieService:CookieService,private exportService:ExportService,
     private declarationRecolteService:DeclarationRecolteService,private parcelleCulturaleService:ParcelleCulturaleService) {
   }
+
+  //pour créer une nouvelle déclaration de la récolte
 
   save(){
     let declarationRecolte = {
@@ -71,15 +76,14 @@ export class DeclarationRecolteComponent implements OnInit {
       }
     })
   }
-  detailsDeclarations:any
-  declarations:any
+
   ngOnInit() {
     this.declarationRecolteService.getDeclarationRecolte().subscribe(res=>{
-      console.log(res)
       this.declarations=res
+ 
       this.loading = false;
     })
-  this.declarationRecolteService.getDetailsDeclarationRecolte().subscribe(res=>{
+    this.declarationRecolteService.getDetailsDeclarationRecolte().subscribe(res=>{
       this.detailsDeclarations=res
       this.detailsDeclarations.forEach(element => {
         element.designation = element.designation==1?'Stockable':'Non Stockable'
@@ -94,9 +98,58 @@ export class DeclarationRecolteComponent implements OnInit {
       }
     })
   }
+
+  //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
-    console.log(id)
+    this.id = id
+    this.forEdit = true
+    this.declarationRecolteService.getDetailDeclarationRecolte(id).subscribe(res=>{
+      this.declaration =   {date_recolte : new Date(res[0].DateRecolte),observations:res[0].Observations}
+      for(var i=0;i<res['length'];i++){
+        this.parcelles[i]={
+          id:i+1,
+          ID_Parcelle_Culturale:res[i].ID_Parcelle_Culturale,
+          type:null,
+          Solde:res[i].Solde,
+          RecolteMO:res[i].RecolteMO,
+          RecolteHorsMO:res[i].RecolteHorsMO,
+          VentePieds:res[i].VentePieds,
+          QteTotale:res[i].QteTotale
+        }
+      }
+      this.form = ! this.form
+    })
   }
+
+  //annuler l'action (ajouter ou modifier)
+  cancel(){
+    this.showForm()
+    this.forEdit = false
+  }
+
+  //pour modifier la déclaration de la récolte
+  update(){
+    let declarationRecolte = {
+      id:this.id,
+      date_recolte:this.declaration.date_recolte,
+      observations:this.declaration.observations,
+      parcels:this.parcelles
+    }
+    this.declarationRecolteService.updateDeclarationRecolte(declarationRecolte).subscribe(res=>{
+      console.log(res)
+      if(res[0].message=="ajout reussi"){
+        Swal.fire(
+          'Ajout réussi',
+          'La déclaration de la récolte est modifiée avec succès',
+          'success'
+        )
+        this.showForm()
+        this.ngOnInit()
+        this.forEdit = false
+      }
+    })
+  }
+    //pour supprimer la déclaration de la récolte
   delete(id){
     Swal.fire({
       title: 'Valider la suppression',
@@ -132,7 +185,7 @@ export class DeclarationRecolteComponent implements OnInit {
       }
     })
   }
-    // Debut exportations
+  // Début exportation des déclaration de la récolte
   exportPdf() {
     let columns=[
       { header: 'Date de récolte', dataKey: 'DateRecolte'},
@@ -174,8 +227,7 @@ export class DeclarationRecolteComponent implements OnInit {
     }
     this.exportService.exportExcel('declarationsRecolte',table)
   }
-  // Fin exportations
-      // Debut exportations details
+    // Début exportations du détail des déclaration de la récolte
       exportDetailsPdf() {
         let columns=[
           { header: 'Date de récolte', dataKey: 'DateRecolte'},
@@ -217,15 +269,19 @@ export class DeclarationRecolteComponent implements OnInit {
         }
         this.exportService.exportExcel('detailsDeclarationsRecolte',table)
       }
-      showHideSynthetique(){
-        this.synthetique=!this.synthetique
-      }
+      
+    //Pour afficher la vue synthétique
+  showHideSynthetique(){
+    this.synthetique=!this.synthetique
+  }
+  
+  //calcul du total des quantitéss 
   calculTotal(parcelle){
     let i = this.parcelles.indexOf(parcelle)
     console.log(this.parcelles[i].RecolteMO)
     this.parcelles[i].QteTotale = this.parcelles[i].RecolteMO + this.parcelles[i].RecolteHorsMO + this.parcelles[i].VentePieds
   }
-  //Ajouter un nouveau element à la table si l'element courant est valide
+  //Ajouter un nouveau élément à la table si l'élément courant est valide
   addItem(){
     if(this.parcelles[this.parcelles.length-1].RecolteMO&&this.parcelles[this.parcelles.length-1].Solde&&
       this.parcelles[this.parcelles.length-1].RecolteHorsMO&&this.parcelles[this.parcelles.length-1].Solde &&
@@ -250,7 +306,7 @@ export class DeclarationRecolteComponent implements OnInit {
       )
     }  
   }
-  //supprimer un element de la table si il n'est pas le seul , si il est le seul on le vide
+  //supprimer un élément de la table s'il n'est pas le seul, et s'il est le seul on le vide
   removeItem(parcelle){
     console.log(this.parcelles.indexOf(parcelle))
     if(this.parcelles.length==1){
@@ -269,9 +325,20 @@ export class DeclarationRecolteComponent implements OnInit {
     }
   }
 
-  //pour afficher et masquer le formulaire
+  //pour afficher, vider et masquer le formulaire 
   showForm(){
+      this.declaration={date_recolte : new Date(),observations:null}
+      this.parcelles=[{
+        id:1,
+        type:null,
+        ID_Parcelle_Culturale:null,
+        Solde:null,
+        RecolteMO:null,
+        RecolteHorsMO:null,
+        VentePieds:null,
+        QteTotale:null
+      }]
+      this.forEdit = false
     this.form=!this.form
   }
-
 }

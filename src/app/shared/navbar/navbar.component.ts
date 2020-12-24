@@ -16,8 +16,7 @@ export class NavbarComponent implements OnInit {
     config.placement = 'bottom-right';
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
   changeLanguage(lang){
     this.languageservice.translate(lang)
     console.log(localStorage.getItem('lang'))

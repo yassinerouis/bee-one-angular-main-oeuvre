@@ -13,12 +13,19 @@ export class DeclarationRecolteService {
    getDetailsDeclarationRecolte(){
      return this.http.get(this.url+'getDetailsDeclarationsRecolte')
    }
+   getDetailDeclarationRecolte(ID){
+    return this.http.get(this.url+'getDetailDeclarationRecolte/'+ID)
+  }
    getDeclarationRecolte(){
     return this.http.get(this.url+'getDeclarationsRecolte')
   }
+
    addDeclarationRecolte(declaration){
       return this.http.post(this.url+"createDeclarationRecolte",declaration)
    }
+   updateDeclarationRecolte(declaration){
+    return this.http.post(this.url+"updateDeclarationRecolte",declaration)
+ }
    deleteDeclarationRecolte(id){
     return this.http.delete(this.url+"deleteDeclarationRecolte/"+id)
  }

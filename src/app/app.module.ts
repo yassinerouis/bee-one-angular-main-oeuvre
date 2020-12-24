@@ -14,6 +14,7 @@ import { FooterComponent } from './shared/footer/footer.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SpinnerComponent } from './shared/spinner/spinner.component';
 import { ContentAnimateDirective } from './shared/directives/content-animate.directive';
+import {MegaMenuModule} from 'primeng/megamenu';
 
 import {TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
@@ -57,6 +58,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     NgbModule,
     BrowserAnimationsModule,
     FormsModule,
+    MegaMenuModule,
     ReactiveFormsModule,
     ChartsModule,
     TableModule,
