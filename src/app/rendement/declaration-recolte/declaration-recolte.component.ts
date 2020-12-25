@@ -1,7 +1,7 @@
 import { CookieService } from 'ngx-cookie-service';
 import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
 import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MessageService } from "primeng/api";
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -21,6 +21,7 @@ const doc = new jsPDF()
 export class DeclarationRecolteComponent implements OnInit {
 
   //declaration des variables 
+  consult = false
   forEdit = false
   statuses: any[];
   loading: boolean = true;
@@ -31,6 +32,7 @@ export class DeclarationRecolteComponent implements OnInit {
   parcelles=[{
     id:1,
     ID_Parcelle_Culturale:null,
+    designation:"null",
     type:null,
     Solde:null,
     RecolteMO:null,
@@ -72,11 +74,68 @@ export class DeclarationRecolteComponent implements OnInit {
       }
     })
   }
+cols:any
+_selectedColumns:any
+@Input() get selectedColumns(): any[] {
+  return this._selectedColumns;
+}
 
+set selectedColumns(val: any[]) {
+  //restore original order
+  this._selectedColumns = this.cols.filter(col => val.includes(col));
+}
+typeof(x){
+  return typeof(x);
+}
+transform = true
+transformDetails = true
+transformDate(declarations){
+  let declarationsWithTransformedDate = declarations
+  if(this.transform){
+    declarationsWithTransformedDate.forEach(element => {
+      console.log(element.DateRecolte)
+      
+      element.DateRecolte = this.datepipe.transform(element.DateRecolte, 'dd/MM/yyyy')
+      console.log(element.DateRecolte)
+    });
+    this.transform=false
+  }
+  return declarationsWithTransformedDate
+}
+transformDateDetails(declarations){
+  let declarationsWithTransformedDate = declarations
+  if(this.transformDetails){
+    declarationsWithTransformedDate.forEach(element => {
+      console.log(element.DateRecolte)
+      
+      element.DateRecolte = this.datepipe.transform(element.DateRecolte, 'dd/MM/yyyy')
+      console.log(element.DateRecolte)
+    });
+    this.transformDetails=false
+  }
+  return declarationsWithTransformedDate
+}
+ids
   ngOnInit() {
+    this.cols = [
+      { field: 'DateRecolte', header: 'Date de récolte' },
+      { field: 'parcelles', header: 'Parcelles' },
+      { field: 'Observations', header: 'Observations' },
+      { field: 'RecolteMO', header: 'Récolte MO' },
+      { field: 'RecolteHorsMO', header: 'Récolte Hors MO' },
+      { field: 'VentePieds', header: 'Vente sur pieds' },
+      { field: 'QteTotale', header: 'Quantité totale' },
+  ];
+  this._selectedColumns = this.cols;
+
     this.declarationRecolteService.getDeclarationRecolte().subscribe(res=>{
+      console.log(res)
+      
       this.declarations=res
- 
+      this.declarations.forEach(element => {
+        
+        element.DateRecolte = new Date(element.DateRecolte)
+      });
       this.loading = false;
     })
     this.declarationRecolteService.getDetailsDeclarationRecolte().subscribe(res=>{
@@ -87,14 +146,40 @@ export class DeclarationRecolteComponent implements OnInit {
       });
       this.loading = false;
     })
+
     //recuperer les parcelles culturales
     this.parcelleCulturaleService.getParcelleCulturale().subscribe(res=>{
       for(var i=0;i<res['length'];i++){
-        this.listParcelles[i]={label:res[i].Ref,value:res[i].ID}
+        this.listParcelles[i]={label:res[i].Ref +": "+res[i].designation,value:res[i].ID}
       }
     })
   }
-
+  declarationForConsult =[]
+  consultDeclaration(id){
+    this.declarationForConsult.pop()
+    this.parcelles = []
+    this.id = id
+    this.forEdit = true
+    this.declarationRecolteService.getDetailDeclarationRecolte(id).subscribe(res=>{
+      console.log(res)
+      this.declaration =   {date_recolte : new Date(res[0].DateRecolte),observations:res[0].Observations}
+      this.declarationForConsult.push(this.declaration)
+      for(var i=0;i<res['length'];i++){
+        this.parcelles[i]={
+          id:i+1,
+          designation:res[i].Ref +':'+res[i].nom_produit,
+          ID_Parcelle_Culturale:res[i].ID_Parcelle_Culturale,
+          type:res[i].designation?'Stockable':'Non stockable',
+          Solde:res[i].Solde,
+          RecolteMO:res[i].RecolteMO,
+          RecolteHorsMO:res[i].RecolteHorsMO,
+          VentePieds:res[i].VentePieds,
+          QteTotale:res[i].QteTotale
+        }
+      }
+      this.consult = true
+    })
+  }
   //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
     this.id = id
@@ -104,8 +189,9 @@ export class DeclarationRecolteComponent implements OnInit {
       for(var i=0;i<res['length'];i++){
         this.parcelles[i]={
           id:i+1,
+          designation:res[i].Ref +':'+res[i].nom_produit,
           ID_Parcelle_Culturale:res[i].ID_Parcelle_Culturale,
-          type:null,
+          type:res[i].designation?'Stockable':'Non stockable',
           Solde:res[i].Solde,
           RecolteMO:res[i].RecolteMO,
           RecolteHorsMO:res[i].RecolteHorsMO,
@@ -119,6 +205,7 @@ export class DeclarationRecolteComponent implements OnInit {
 
   //annuler l'action (ajouter ou modifier)
   cancel(){
+    this.parcelles = []
     this.showForm()
     this.forEdit = false
   }
@@ -149,7 +236,7 @@ export class DeclarationRecolteComponent implements OnInit {
   delete(id){
     Swal.fire({
       title: 'Valider la suppression',
-      text: "Vous êtes sûrs que vous voulez supprimer cette déclaration de la récolte ?",
+      text: "Voulez-vous supprimer cet élément ?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -166,6 +253,13 @@ export class DeclarationRecolteComponent implements OnInit {
               'success'
             )
             this.ngOnInit()
+          }else{
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur...',
+              text: 'L\'éléments n\'est pas supprimé !',
+            }
+            )
           }
         })
       }
@@ -192,7 +286,7 @@ export class DeclarationRecolteComponent implements OnInit {
       { header: 'Vente sur pieds', dataKey: 'VentePieds' },
       { header: 'Quantité totale', dataKey: 'QteTotale' }
     ]
-    this.exportService.setTable(this.declarations)
+    this.exportService.setTable(this.transformDate(this.declarations))
     this.exportService.exportPdf(columns,'declarationsRecolte.pdf')
   }
   printPdf(){
@@ -205,20 +299,20 @@ export class DeclarationRecolteComponent implements OnInit {
       { header: 'Vente sur pieds', dataKey: 'VentePieds' },
       { header: 'Quantité totale', dataKey: 'QteTotale' }
     ]
-    this.exportService.setTable(this.declarations)
+    this.exportService.setTable(this.transformDate(this.declarations))
     this.exportService.printPdf(columns)
   }
   exportExcel() {
     let table = []
-    for(var i=0;i<this.declarations.length;i++){
+    for(var i=0;i<this.transformDate(this.declarations).length;i++){
       table[i]={
-        'Date de récolte': this.datepipe.transform(this.declarations[i].DateRecolte, 'dd/MM/yyyy'),
-        'Nombre de parcelles':this.declarations[i].parcelles,
-        'Observations':this.declarations[i].Observations,
-        'Récolte MO':this.declarations[i].RecolteMO,
-        'Récolte hors MO': this.declarations[i].RecolteHorsMO,
-        'Vente sur pieds': this.declarations[i].VentePieds,
-        'Quantité totale': this.declarations[i].QteTotale 
+        'Date de récolte': this.transformDate(this.declarations)[i].DateRecolte,
+        'Nombre de parcelles':this.transformDate(this.declarations)[i].parcelles,
+        'Observations':this.transformDate(this.declarations)[i].Observations,
+        'Récolte MO':this.transformDate(this.declarations)[i].RecolteMO,
+        'Récolte hors MO': this.transformDate(this.declarations)[i].RecolteHorsMO,
+        'Vente sur pieds': this.transformDate(this.declarations)[i].VentePieds,
+        'Quantité totale': this.transformDate(this.declarations)[i].QteTotale 
       }
     }
     this.exportService.exportExcel('declarationsRecolte',table)
@@ -234,7 +328,7 @@ export class DeclarationRecolteComponent implements OnInit {
           { header: 'Vente sur pieds', dataKey: 'VentePieds' },
           { header: 'Quantité totale', dataKey: 'QteTotale' }
         ]
-        this.exportService.setTable(this.detailsDeclarations)
+        this.exportService.setTable(this.transformDateDetails(this.detailsDeclarations))
         this.exportService.exportPdf(columns,'detailsDeclarationsRecolte.pdf')
       }
       printDetailsPdf(){
@@ -247,20 +341,20 @@ export class DeclarationRecolteComponent implements OnInit {
           { header: 'Vente sur pieds', dataKey: 'VentePieds' },
           { header: 'Quantité totale', dataKey: 'QteTotale' }
         ]
-        this.exportService.setTable(this.detailsDeclarations)
+        this.exportService.setTable(this.transformDateDetails(this.detailsDeclarations))
         this.exportService.printPdf(columns)
       }
       exportDetailsExcel() {
         let table = []
-        for(var i=0;i<this.detailsDeclarations.length;i++){
+        for(var i=0;i<this.transformDateDetails(this.detailsDeclarations).length;i++){
           table[i]={
-            'Date de récolte': this.datepipe.transform(this.detailsDeclarations[i].DateRecolte, 'dd/MM/yyyy'),
-            'Parcelle': this.detailsDeclarations[i].Ref ,
-            'Type du produit':this.detailsDeclarations[i].designation,
-            'Récolte MO':this.detailsDeclarations[i].RecolteMO,
-            'Récolte hors MO': this.detailsDeclarations[i].RecolteHorsMO,
-            'Vente sur pieds': this.detailsDeclarations[i].VentePieds,
-            'Quantité totale': this.detailsDeclarations[i].QteTotale 
+            'Date de récolte': this.transformDateDetails(this.detailsDeclarations)[i].DateRecolte,
+            'Parcelle': this.transformDateDetails(this.detailsDeclarations)[i].Ref ,
+            'Type du produit':this.transformDateDetails(this.detailsDeclarations)[i].designation,
+            'Récolte MO':this.transformDateDetails(this.detailsDeclarations)[i].RecolteMO,
+            'Récolte hors MO': this.transformDateDetails(this.detailsDeclarations)[i].RecolteHorsMO,
+            'Vente sur pieds': this.transformDateDetails(this.detailsDeclarations)[i].VentePieds,
+            'Quantité totale': this.transformDateDetails(this.detailsDeclarations)[i].QteTotale 
           }
         }
         this.exportService.exportExcel('detailsDeclarationsRecolte',table)
@@ -285,6 +379,7 @@ export class DeclarationRecolteComponent implements OnInit {
       this.parcelles.push({
         id:this.parcelles.length+1,
         type:null,
+        designation:null,
         ID_Parcelle_Culturale:null,
         Solde:null,
         RecolteMO:null,
@@ -309,6 +404,7 @@ export class DeclarationRecolteComponent implements OnInit {
       this.parcelles[0]={
         id:this.parcelles.length,
         type:null,
+        designation:null,
         ID_Parcelle_Culturale:null,
         Solde:null,
         RecolteMO:null,
@@ -325,8 +421,9 @@ export class DeclarationRecolteComponent implements OnInit {
       this.declaration={date_recolte : new Date(),observations:null}
       this.parcelles=[{
         id:1,
-        type:null,
         ID_Parcelle_Culturale:null,
+        designation:"null",
+        type:null,
         Solde:null,
         RecolteMO:null,
         RecolteHorsMO:null,
@@ -335,5 +432,56 @@ export class DeclarationRecolteComponent implements OnInit {
       }]
       this.forEdit = false
     this.form=!this.form
+  }
+  selectedDeclarations=[]
+  deleteSelectedDeclarations(){
+    let ids = []
+    this.selectedDeclarations.forEach(element=>{
+      ids.push(element.ID[0])
+    })
+    console.log(ids)
+    if(ids.length==1){
+      this.delete(ids[0])
+    }else{
+      Swal.fire({
+        title: 'Valider la suppression',
+        text: "Voulez-vous supprimer ces "+this.selectedDeclarations.length+" éléments?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText:'Annuler',
+        confirmButtonText: 'Oui'
+      }).then((result) => {
+        if (result.value) {
+          this.declarationRecolteService.deleteDeclarationsRecolte(ids).subscribe(res=>{
+            if(res[0].message=="ajout reussi"){
+              Swal.fire(
+                'Supprimée !',
+                'Tous les éléments sont supprimés avec succès',
+                'success'
+              )
+              this.ngOnInit()
+            }else{
+              Swal.fire({
+                icon: 'error',
+                title: 'Erreur...',
+                text: 'Les éléments ne sont pas supprimés !',
+              }
+              )
+            }
+          })
+        }
+      })
+    }
+  }
+
+  showOnlyLinkedRisks(event) {
+    console.log(event.checked)
+    if(event.checked){
+      this.selectedDeclarations = this.declarations
+    }else{
+      this.selectedDeclarations=[]
+    }
   }
 }

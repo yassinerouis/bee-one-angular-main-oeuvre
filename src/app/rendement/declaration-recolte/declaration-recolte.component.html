@@ -1,11 +1,13 @@
 <!--
   Tableau qui affiche les Déclaration de la récolte
 -->
-<div *ngIf="!form && !synthetique" >
+<div *ngIf="!form && !synthetique &&!consult" >
   <div class="page-header">
     <h3 class="page-title">
       Déclaration de la récolte
     </h3>
+    <div>
+    </div>
     <div class="text-right">
       <button pButton (click)="showForm()" pRipple type="button" icon="pi pi-plus" pTooltip="Ajouter" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3"></button>
       <button pButton pRipple type="button" (click)="showHideSynthetique()" icon="pi pi-align-justify" pTooltip="Vue synthétique" tooltipPosition="bottom" class="p-button-rounded p-button-help p-mr-2"></button>
@@ -13,67 +15,46 @@
       <button pButton pRipple type="button" (click)="exportExcel()" icon="pi pi-file-excel" pTooltip="Excel" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
       <button pButton pRipple type="button" (click)="exportPdf()" icon="pi pi-file-pdf" pTooltip="PDF" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
       <button pButton pRipple type="button" (click)="printPdf()" icon="pi pi-print" pTooltip="Imprimer" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
-  
     </div>
   </div>
   <div class="row">
-    <p-table #dt [value]="declarations" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dt [value]="declarations" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
       [paginator]="true" currentPageReportTemplate="Afficher {first} à {last} de {totalRecords} entrées"
-      [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']">
+      [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']"
+     >
       <ng-template pTemplate="caption">
         <div class="p-d-flex">
           <span class="p-input-icon-left p-ml-auto">
             <i class="pi pi-search"></i>
             <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Recherche globale" />
           </span>
+          <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header"
+          selectedItemsLabel="{0} colonnes sélectionnées" [style]="{minWidth: '200px'}" placeholder="Choix d'affichage"></p-multiSelect>  
+          <button *ngIf="selectedDeclarations.length>0" pButton pRipple label="Supprimer({{selectedDeclarations.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedDeclarations()" [disabled]="!selectedDeclarations || !selectedDeclarations.length"></button>
         </div>
       </ng-template>
-      <ng-template pTemplate="header">
+      <ng-template pTemplate="header" let-columns>
         <tr>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Date de récolte
-              <p-columnFilter type="date" field="DateRecolte" display="menu"></p-columnFilter>
+          <th style="width: 3rem">
+            <p-checkbox (onChange)="showOnlyLinkedRisks($event)"></p-checkbox>
+          </th>
+          <th *ngFor="let col of columns">
+            <div *ngIf="col.field == 'parcelles' || col.field == 'RecolteMO'|| col.field == 'RecolteHorsMO' || col.field == 'VentePieds'|| col.field == 'QteTotale'" 
+            class="p-d-flex p-jc-between p-ai-center">
+              {{col.header}}
+              <p-columnFilter type="numeric" field="{{col.field}}" display="menu"></p-columnFilter>
+            </div>
+            <div *ngIf="col.field == 'Observations' " 
+            class="p-d-flex p-jc-between p-ai-center">
+              {{col.header}}
+              <p-columnFilter type="text" field="{{col.field}}" display="menu"></p-columnFilter>
+            </div>
+            <div *ngIf="col.field == 'DateRecolte'" class="p-d-flex p-jc-between p-ai-center">
+              {{col.header}}
+              <p-columnFilter type="date" field="{{col.field}}" display="menu"></p-columnFilter>            
             </div>
           </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Parcelles
-              <p-columnFilter type="numeric" field="parcelles" display="menu"></p-columnFilter>
-            </div>
-          </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Observations
-              <p-columnFilter type="text" field="Observations" display="menu"></p-columnFilter>
-            </div>
-          </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Récolte MO
-              <p-columnFilter type="numeric" field="RecolteMO" display="menu"></p-columnFilter>
-            </div>
-          </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Récolte hors MO
-              <p-columnFilter type="numeric" field="RecolteHorsMO" display="menu"></p-columnFilter>
-            </div>
-          </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Vente sur pieds
-              <p-columnFilter type="numeric" field="VentePieds" display="menu"></p-columnFilter>
-            </div>
-          </th>
-          <th>
-            <div class="p-d-flex p-jc-between p-ai-center">
-              Quantité totale
-              <p-columnFilter type="numeric" field="QteTotale" display="menu"></p-columnFilter>
-            </div>
-          </th>
-       
           <th style="width: 8rem">
             <div class="p-d-flex p-jc-between p-ai-center">
               Actions
@@ -81,32 +62,20 @@
           </th>
         </tr>
       </ng-template>
-      <ng-template pTemplate="body" let-declaration>
+      <ng-template pTemplate="body" let-declaration let-columns="columns">
         <tr>
-          <td class="text-center">
-            {{declaration.DateRecolte | date: 'MM/dd/yyyy'}}
-          </td>
-          <td class="text-right">
-            {{declaration.parcelles}}
-          </td>
           <td>
-            <span class="image-text">{{declaration.Observations}}</span>
+            <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedDeclarations"></p-checkbox>
           </td>
-          <td class="text-right">
-            {{declaration.RecolteMO}}
-          </td>
-          <td class="text-right">
-            {{declaration.RecolteHorsMO}}
-          </td>
-          <td class="text-right">
-            {{declaration.VentePieds}}
-          </td> 
-          <td class="text-right">
-            {{declaration.QteTotale}}
+          <td *ngFor="let col of columns">
+            <div *ngIf="col.field=='DateRecolte'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
+            <div *ngIf="col.field!='DateRecolte'&& typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>
+            <div *ngIf="col.field!='DateRecolte' && typeof(declaration[col.field])=='number'" class="text-right">{{declaration[col.field] }}</div>
           </td>
           <td class="text-center">
-            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" class="p-button-rounded p-button-danger p-mr-2 mr-1 ml-1"></button>
-            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="Editer" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2"></button>      
+            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID[0])" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
+            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="Editer" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
+            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
           </td>
         </tr>
       </ng-template>
@@ -121,7 +90,7 @@
   <!--
   Tableau qui affiche le détail des Déclarations de la récolte
   -->
-  <div *ngIf="synthetique" >
+  <div *ngIf="synthetique &&!consult" >
     <div class="page-header">
   <h3 class="page-title">
     Déclaration de la récolte
@@ -229,15 +198,15 @@
 <!--
   Formulaire d'ajout + modification
 -->
-  <div *ngIf="form && !synthetique">
+  <div *ngIf="form && !synthetique && !consult">
     <div class="text-right">
-      <button type="button" pButton pRipple icon="pi pi-times" (click)="form=!form" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
     </div>
     <div class="row">
       <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title mb-4"> Informations générales</h4>
+            <h5 class="card-title mb-4"> Informations générales</h5>
               <div class="row">
                 <div class="col-md-12 mb-3" >
                   <label for="float-input">Date de récolte</label>
@@ -257,11 +226,10 @@
       <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title mb-4">Quantités récoltés</h4>
-
+            <h5 class="card-title mb-4">Quantités récoltés</h5>
             <div class="row" style="background-color:#F7F7F7; padding-top: 17px; border-radius:5px; margin-bottom: 10px;">
               <div class="col-md-2">Parcelle</div>
-              <div *ngIf="!forEdit" class="col-md">Type de produit</div>
+              <div class="col-md">Type de produit</div>
               <div class="col-md">Récolte MO (kg)</div>
               <div class="col-md">Récolte hors MO</div>
               <div class="col-md">Vente sur pieds</div>
@@ -283,12 +251,12 @@
                   </ng-template>
                 </p-dropdown>
               </div>
-              <div *ngIf="!forEdit" class="col-md" style="padding-top:10px;">{{parcelle.type}}</div>
+              <div class="col-md" style="padding-top:10px;">{{parcelle.type}}</div>
               <div class="col-md">
-                <p-inputNumber [min]="0"  mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
+                <p-inputNumber [min]="0"  mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteMO" class="p-inputtext-sm right" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
               </div>
               <div class="col-md">
-                <p-inputNumber [min]="0" mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteHorsMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
+                <p-inputNumber [min]="0" [style]="{'text-align':'right'}" mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteHorsMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
 
               </div>
               <div class="col-md">
@@ -315,4 +283,55 @@
       <button *ngIf="!forEdit" pButton pRipple type="button" (click)="save()" label="Enregistrer" class="p-button-raised p-button-primary"></button>
       <button pButton pRipple type="button" (click)="cancel()" label="Annuler" class="p-button-raised p-button-secondary ml-1"></button>
     </div>
+  </div>
+  <div *ngIf="consult" >
+    <div class="text-right">
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="consult=!consult" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
+    </div>
+    <div class="row">
+    <div class="col-md-4">
+      <h4>Informations générales</h4>
+      <hr/>
+      <p-table  [value]="declarationForConsult">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Date de la récolte</th>
+                <th>Observations</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-declaration>
+            <tr>
+                <td>{{declaration.date_recolte | date: 'MM/dd/yyyy'}}</td>
+                <td>{{declaration.observations}}</td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+    <div class="col-md-8">
+      <h4>Quantités Récoltés (kg)</h4>
+      <hr/>
+      <p-table [value]="parcelles">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Parcelle</th>
+                <th>Récolte MO</th>
+                <th>Récolte hors MO</th>
+                <th>Vente sur pieds</th>
+                <th>Quantité totale</th>
+                <th>Solde</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-parcelle>
+            <tr>
+                <td>{{parcelle.designation}}</td>
+                <td>{{parcelle.RecolteMO}}</td>
+                <td>{{parcelle.RecolteHorsMO}}</td>
+                <td>{{parcelle.VentePieds}}</td>
+                <td>{{parcelle.QteTotale}}</td>
+                <td>{{parcelle.Solde}}</td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
   </div>

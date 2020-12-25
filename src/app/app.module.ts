@@ -15,7 +15,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SpinnerComponent } from './shared/spinner/spinner.component';
 import { ContentAnimateDirective } from './shared/directives/content-animate.directive';
 import {MegaMenuModule} from 'primeng/megamenu';
-
+import {PanelMenuModule} from 'primeng/panelmenu';
 import {TableModule} from 'primeng/table';
 import {ToastModule} from 'primeng/toast';
 import {CalendarModule} from 'primeng/calendar';
@@ -32,6 +32,8 @@ import {TooltipModule} from 'primeng/tooltip';
 import {InputTextareaModule} from 'primeng/inputtextarea';
 import {InputNumberModule} from 'primeng/inputnumber';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
+import {PanelModule} from 'primeng/panel';
+
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
 }
@@ -56,11 +58,13 @@ export function HttpLoaderFactory(http: HttpClient) {
       }
     }),
     NgbModule,
+    PanelModule,
     BrowserAnimationsModule,
     FormsModule,
     MegaMenuModule,
     ReactiveFormsModule,
     ChartsModule,
+    PanelMenuModule,
     TableModule,
     CalendarModule,
 		SliderModule,

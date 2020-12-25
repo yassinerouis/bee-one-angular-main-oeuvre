@@ -19,7 +19,6 @@ export class DeclarationRecolteService {
    getDeclarationRecolte(){
     return this.http.get(this.url+'getDeclarationsRecolte')
   }
-
    addDeclarationRecolte(declaration){
       return this.http.post(this.url+"createDeclarationRecolte",declaration)
    }
@@ -29,4 +28,7 @@ export class DeclarationRecolteService {
    deleteDeclarationRecolte(id){
     return this.http.delete(this.url+"deleteDeclarationRecolte/"+id)
  }
+ deleteDeclarationsRecolte(ids){
+  return this.http.post(this.url+"deleteDeclarationsRecolte",{ids:ids})
+}
 }

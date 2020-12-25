@@ -11,7 +11,18 @@
 @import "~bootstrap/scss/bootstrap";
 @import "./assets/scss/fonts";
 @import "./assets/scss/functions";
-
+.p-button.p-button-icon-only.p-button-rounded {
+    border-radius: 50%;
+    height: 2rem;
+    width: 2rem;
+    margin: 0;
+}
+.p-inputnumber-input {
+    text-align: right !important;
+}
+.card-body {
+    padding: 2rem!important;
+}
 /* === Icon fonts === */
 @import "~@mdi/font/scss/materialdesignicons";
 .p-megamenu {

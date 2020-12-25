@@ -323,6 +323,40 @@
               -webkit-box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
                       box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
             }
+            @mixin rtl{
+              .nav-link {
+                .menu-title {
+                  @include display-flex;
+                  @include align-items(center);
+                  background: $sidebar-menu-hover-bg;
+                  padding: 0.5rem 1.4rem;
+                  left: $sidebar-width-icon;
+                  position: absolute;
+                  text-align: right;
+                  top: 0;
+                  bottom: 0;
+                  width: $icon-only-collapse-width;
+                  z-index: 1;
+                  line-height: 1.8;
+                  -webkit-box-shadow: 4px 0px 7px 0px rgba(182, 185, 189, 0.25);
+                          box-shadow: 4px 0px 7px 0px rgba(182, 185, 189, 0.25);              
+                  &:after {
+                    display: none;
+                  }
+                }
+              }
+              .collapse,
+              .collapsing {
+                display: block;
+                background: $icon-only-menu-bg-light;
+                @include border-radius(0 0 5px 0);
+                position: absolute;
+                left: $sidebar-width-icon;
+                width: $icon-only-collapse-width;
+                -webkit-box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
+                        box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
+              }
+            }
           }
           &.nav-profile {
             padding: 0 .3rem;

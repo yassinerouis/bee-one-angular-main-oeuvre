@@ -11,11 +11,74 @@ import { LanguageService } from 'src/app/services/language/language.service';
 export class NavbarComponent implements OnInit {
   public iconOnlyToggled = false;
   public sidebarToggled = false;
-  
+  clickItem1(){console.log("hahahaha")}
+  items = [
+    {
+        label: 'Fertilisation',
+        icon: 'pi pi-pw pi-th-large',
+        items: [{
+                label: 'Ordre de fertilisation', 
+                icon: 'pi pi-fw pi-plus',
+                items: [
+                    {label: 'Ajouter', icon: 'pi pi-fw pi-user-plus', command: (event) => this.clickItem1() },
+                    {label: 'Consulter', icon: 'pi pi-fw pi-filter'}
+                ]
+            },
+            {label: 'Réalisation', 
+            icon: 'pi pi-fw pi-external-link',
+            items: [
+              {label: 'Ajouter', icon: 'pi pi-fw pi-user-plus'},
+              {label: 'Consulter', icon: 'pi pi-fw pi-filter'}
+          ]
+          }
+        ]
+    }, {
+      label: 'Irrigation',
+      icon: 'pi pi-pw pi-slack',
+      items: [{
+              label: 'Ajouter', 
+              icon: 'pi pi-fw pi-plus',
+          },
+          {label: 'Consulter', 
+          icon: 'pi pi-fw pi-external-link',
+          items: [
+            {label: 'Vue normale', icon: 'pi pi-fw pi-user-plus'},
+            {label: 'Vue synthètique', icon: 'pi pi-fw pi-filter'}
+        ]
+        }
+      ]
+  },
+    {
+      label: 'Floraison',
+      icon: 'pi pi-pw pi-file',
+      items: [{
+              label: 'Pourcentage d\'ouverture', 
+              icon: 'pi pi-fw pi-plus',
+              items: [
+                  {label: 'Synthèse', icon: 'pi pi-fw pi-user-plus'},
+                  {label: 'Consulter', icon: 'pi pi-fw pi-filter'}
+              ]
+          },
+          {label: 'Suivi d\'intensité des fleurs', 
+          icon: 'pi pi-fw pi-external-link',
+          items: [
+            {label: 'Synthèse', icon: 'pi pi-fw pi-user-plus'},
+            {label: 'Consulter', icon: 'pi pi-fw pi-filter'}
+        ]
+        }
+      ]
+    }
+];
   constructor(config: NgbDropdownConfig,private languageservice:LanguageService) {
     config.placement = 'bottom-right';
   }
-
+  open(){
+    if(document.getElementById('theme-settings').getAttribute('class')=='settings-panel'){
+      document.getElementById('theme-settings').setAttribute('class', 'settings-panel open');
+    }else if(document.getElementById('theme-settings').getAttribute('class')=='settings-panel open'){
+      document.getElementById('theme-settings').setAttribute('class', 'settings-panel');
+    }
+  }
   ngOnInit() {}
   changeLanguage(lang){
     this.languageservice.translate(lang)

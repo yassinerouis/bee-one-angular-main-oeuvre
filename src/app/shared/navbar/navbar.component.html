@@ -6,29 +6,6 @@
     <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize" (click)="toggleSidebar()">
       <span class="mdi mdi-menu"></span>
     </button>
-    <div class="search-field d-none d-md-block">
-      <div class="d-flex align-items-center h-100" action="#">
-        <div class="nav-item nav-profile dropdown" ngbDropdown>
-          <p-megaMenu [model]="[
-          {
-              label: 'Raccourcis', icon: 'pi pi-eye',
-              items: [
-                  [
-                      {
-                          label: 'Fertilisation',
-                          items: [{label: 'Ajouter nouveau'}, {label: 'Consulter'}]
-                      },
-                      {
-                          label: 'Irrigation',
-                          items: [{label: 'Modifier valeurs'}, {label: 'Vue sythètique'}]
-                      }
-                  ]
-              ]
-          }]"></p-megaMenu>
-
-        </div>
-      </div>
-    </div>
     <ul class="navbar-nav navbar-nav-right">
       <li class="nav-item nav-profile dropdown" ngbDropdown>
         <a class="nav-link dropdown-toggle" id="profileDropdown" ngbDropdownToggle>
@@ -195,13 +172,21 @@
         </a>
       </li>
       <li class="nav-item nav-settings d-none d-lg-block">
-        <a class="nav-link">
+        <a class="nav-link"  (click)="open()">
           <i class="mdi mdi-format-line-spacing"></i>
         </a>
       </li>
     </ul>
-    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" (click)="toggleOffcanvas()">
+    <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button">
       <span class="mdi mdi-menu"></span>
     </button>
   </div>
 </nav>
+<div class="settings-panel" id="theme-settings">
+  <p-panel >
+    <p-header>
+        Raccourcis
+    </p-header>
+</p-panel>
+  <p-panelMenu [model]="items" [style]="{'width':'300px'}"></p-panelMenu>
+</div>
