@@ -1,5 +1,30 @@
 {
+    "raccourcis":{
+        "titre":"الاختصارات",
+        "fertilisation":"التخصيب",
+        "irrigation":"الري",
+        "floraison":"المزهرة"
+    },
+    "global":{
+        "langues":"اللغات",
+        "pdf":"بي دي إف ",
+        "excel":"اكسل",
+        "imprimer":"طباعة",
+        "vueGraphique":"عرض الرسم",
+        "vueSynthetique":"عرض تحليلي",
+        "vueNormale":"عرض عادي",
+        "ajouter":"أضف",
+        "supprimer":"حذف",
+        "editer":"تعديل",
+        "consulter":"معاينة",
+         "enregistrer":"حفظ",
+        "annuler":"الغاء",
+        "modifier":"تغيير",
+        "fermer":"اغلاق"
+    },
     "primeng": {
+        "afficherDeA":"إظهار {first} إلى {last} من {totalRecords} من الإدخالات",
+        "actions":"اجراءات",
         "startsWith": "يبدأ ب",
         "contains": "يحتوي على",
         "notContains": "لا يحتوي على",
@@ -25,13 +50,16 @@
         "choose": "اختيار",
         "upload": "اضافة ملف",
         "cancel": "الغاء",
-        "dayNames": ["الاحد", "", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
-        "dayNamesShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-        "dayNamesMin": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-        "monthNames": ["Janvier","Fevrier","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Decembre"],
-        "monthNamesShort": ["Jan", "Fev", "Mar", "Avr", "Mai", "Jun","Jui", "Aoû", "Sep", "Oct", "Nov", "Dec"],
-        "today": "Aujourd'hui",
-        "weekHeader": "Wk"
+        "dayNames": ["الاحد", "الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"],
+        "dayNamesShort": ["الاحد", "الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"],
+        "dayNamesMin": ["الاحد", "الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"],
+        "monthNames": ["يناير","فبراير","مارس","ابريل","ماي","يونيو","يوليوز","غشت","شتنبر","اكتوبر","نونبر","دجنبر"],
+        "monthNamesShort":["يناير","فبراير","مارس","ابريل","ماي","يونيو","يوليوز","غشت","شتنبر","اكتوبر","نونبر","دجنبر"],
+        "today": "اليوم",
+        "weekHeader": "يوم",
+        "recherche":"البحث العام",
+        "selectedColumns":"عمود مختار",
+        "choiceColumns":"اختيار الاعمدة"
     },
     "rendement":{
         "moduleName":"المحصول",
@@ -50,6 +78,51 @@
         "chiffreAffaires":"حجم الأعمال",
         "validationRecolte":"التحقق من الحصاد",
         "analyseQualitative":"التحليل النوعي ",
-        "agreageFruits":"الموافقة على الفاكهة"
+        "agreageFruits":"الموافقة على الفاكهة",
+        "dateRecolte":"تاريخ الحصاد",
+        "parcelles":"عدد قطع الأراضي المحصودة",
+        "observations":"الملاحظات",
+        "typeProduit":"نوع المنتوج",
+        "recolteMO":"حصاد مو",
+        "recolteHorsMO":"حصاد  خارج مو",
+        "ventePieds":"بيع على الأقدام",
+        "qteTotale":"الكمية الإجمالية",
+        "solde":"مبيعات",
+        "parcelle":"القطعة الارضية",
+        "informationsGenerales":"معلومات عامة",
+        "qteRecolte":"كمية الحصاد"
+    },    "swal":{
+        "ajout":{
+            "titre":"تمت الاضافة",
+            "description":"تمت اضافة العنصر بنجاح",
+            "titreErr":"فشلت الاضافة",
+            "descriptionErr":"لم تنجح اضافة العنصر"
+        },
+        "modification":{
+            "titre":"تم التغيير",
+            "description":"تم تغيير العنصر بنجاح",
+            "titreErr":"فشل في التغيير",
+            "descriptionErr":"لم يتم تغيير العنصر"
+        },
+        "suppression":{
+            "titre":"تم الحذف",
+            "description":"تم حذف العنصر بنجاح",
+            "titreErr":"فشل الحذف",
+            "descriptionErr":"لم يتم حذف العنصر",
+            "titreVal":"تاكيد الحذف",
+            "descriptionVal":"هل انت متاكد من حذف هذا العنصر؟"
+        },
+        "suppressionPlusieurs":{
+            "titre":"تم الحذف",
+            "description":"تم حذف جميع العناصر المختارة بنجاح",
+            "titreErr":"فشل الحذف",
+            "descriptionErr":"لم يتم حذف اي عنصر",
+            "titreVal":"تاكيد الحذف",
+            "descriptionVal":"هل انت متاكيد من حذف هذه العناصر؟"
+        },
+        "champsObligatoires":"المرجو ادخال جميع المعلومات الضرورية",
+        "annuler":"الغاء",
+        "ok":"نعم",
+        "erreur":"خطا ..."
     }
 }

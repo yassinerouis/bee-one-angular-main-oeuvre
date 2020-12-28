@@ -1,5 +1,9 @@
 /* Sidebar */
-
+@mixin rtl() {
+  html[dir=rtl] & {
+    @content;
+  }
+}
 @import '../../../styles.scss';
 .vsm-header{
   text-transform: uppercase;
@@ -207,33 +211,44 @@
         padding: 0;
         .nav-link {
           color: $sidebar-submenu-color;
-          padding: 0.75rem 0.75rem 0.75rem 0.75rem !important;
+          padding: 0.75rem 2rem 0.75rem 0.75rem !important;
           position: relative;
           font-size: $sidebar-submenu-font-size;
           line-height: 1;
           height: auto;
           border-top: 0;
-          &:before {
-            content: "\F054";
-            font-family: "Material Design Icons";
-            display: block;
-            position: absolute;
-            left:0px;
-            .rtl & {
-              left: auto;
-              right: 0;
+        
+          @include rtl(){
+            color: $sidebar-submenu-color;
+            padding: 0.75rem 2rem 0.75rem 0.75rem !important;
+            position: relative;
+            font-size: $sidebar-submenu-font-size;
+            line-height: 1;
+            height: auto;
+            border-top: 0;
+            text-align : right!important;
+            &:before {
+              content: "\F054";
+              font-family: "Material Design Icons";
+              display: block;
+              position: absolute;
+              left:0px;
+              .rtl & {
+                left: auto;
+                right: 0;
+              }
+              top:50%;
+              @include transform(translateY(-50%));
+              color: lighten($sidebar-submenu-color, 10%);
+              font-size: .75rem;
             }
-            top:50%;
-            @include transform(translateY(-50%));
-            color: lighten($sidebar-submenu-color, 10%);
-            font-size: .75rem;
-          }
-          &.active {
-            color: $sidebar-menu-active-color;
-            background: transparent;
-          }
-          &:hover {
-            color: $sidebar-submenu-hover-color;
+            &.active {
+              color: $sidebar-menu-active-color;
+              background: transparent;
+            }
+            &:hover {
+              color: $sidebar-submenu-hover-color;
+            }
           }
         }
         &:hover {
@@ -323,14 +338,14 @@
               -webkit-box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
                       box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
             }
-            @mixin rtl{
+            @include rtl(){
               .nav-link {
                 .menu-title {
                   @include display-flex;
                   @include align-items(center);
                   background: $sidebar-menu-hover-bg;
                   padding: 0.5rem 1.4rem;
-                  left: $sidebar-width-icon;
+                  right: $sidebar-width-icon;
                   position: absolute;
                   text-align: right;
                   top: 0;
@@ -351,7 +366,7 @@
                 background: $icon-only-menu-bg-light;
                 @include border-radius(0 0 5px 0);
                 position: absolute;
-                left: $sidebar-width-icon;
+                right: $sidebar-width-icon;
                 width: $icon-only-collapse-width;
                 -webkit-box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);
                         box-shadow: 4px 4px 7px 0px rgba(182, 185, 189, 0.25);

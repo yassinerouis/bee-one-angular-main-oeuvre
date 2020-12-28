@@ -14,6 +14,6 @@ export class ParcelleCulturaleService {
      return this.http.post(this.url+'get_parcelle_cultural/showWithProduit',{IDFerme:1})
    }
    getTypeProduit(id_parcelle){
-      return this.http.get('http://localhost:9010/agridata-lga-backend/api/list_produit_rendement/getProductForParcelle/'+id_parcelle)
+      return this.http.get(this.url+'list_produit_rendement/getProductForParcelle/'+id_parcelle)
    }
 }

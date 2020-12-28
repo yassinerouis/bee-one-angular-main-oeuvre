@@ -4,6 +4,11 @@
 .text-black{
   color:black;
 }
+@mixin rtl() {
+  html[dir=rtl] & {
+    @content;
+  }
+}
 /* Navbar */
 .navbar {
   font-family: $type1-light;
@@ -296,13 +301,11 @@
         }
       }
       &.navbar-nav-right {
-        @media (min-width: 992px) {
           margin-left: auto;
-          .rtl & {
+          @include rtl(){
             margin-left: 0;
             margin-right: auto;
           }
-        }
       }
     }
   }
@@ -407,4 +410,9 @@
   right: 0;
   box-shadow: 7px 0 80px -9px rgba(0,0,0,.15);
   margin-top:70px;
+  @include rtl(){
+    left:0;
+    box-shadow: 7px 0 80px -9px rgba(0,0,0,.15);
+    margin-top:70px;
+  }
 }

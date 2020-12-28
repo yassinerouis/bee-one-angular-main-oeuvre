@@ -1,5 +1,31 @@
 {
+    "raccourcis":{
+        "titre":"Raccourcis",
+        "fertilisation":"Fertilisation",
+        "irrigation":"Irrigation",
+        "floraison":"Floraison"
+    },
+    "global":{
+        "langues":"Langues",
+        "pdf":"PDF",
+        "excel":"Excel",
+        "imprimer":"Imprimer",
+        "vueGraphique":"Vue graphique",
+        "vueSynthetique":"Vue synthètique",
+        "vueNormale":"Vue normale",
+        "ajouter":"Ajouter",
+        "supprimer":"Supprimer",
+        "editer":"Editer",
+        "consulter":"Consulter",
+      
+        "enregistrer":"Enregistrer",
+        "annuler":"Annuler",
+        "modifier":"Modifier",
+        "fermer":"Fermer"
+    },
     "primeng": {
+        "afficherDeA":"Afficher {first} à {last} de {totalRecords} entrées",
+        "actions":"Actions",
         "startsWith": "Commence par",
         "contains": "Contient",
         "notContains": "Ne contient pas",
@@ -31,7 +57,10 @@
         "monthNames": ["Janvier","Fevrier","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Decembre"],
         "monthNamesShort": ["Jan", "Fev", "Mar", "Avr", "Mai", "Jun","Jui", "Aoû", "Sep", "Oct", "Nov", "Dec"],
         "today": "Aujourd'hui",
-        "weekHeader": "Wk"
+        "weekHeader": "Jour",
+        "recherche":"Recherche globale",
+        "selectedColumns":"colonnes sélectionnées",
+        "choiceColumns":"Choix d'affichage"
     },
     "rendement":{
         "moduleName":"Rendement",
@@ -50,6 +79,52 @@
         "chiffreAffaires":"Chiffre d'affaires",
         "validationRecolte":"Validation de la récolte",
         "analyseQualitative":"Analyse qualitative",
-        "agreageFruits":"Agréage des fruits"
+        "agreageFruits":"Agréage des fruits",
+        "dateRecolte":"Date de la récolte",
+        "parcelles":"Nombre de parcelles récoltées",
+        "observations":"Observations",
+        "typeProduit":"Type de produit ",
+        "recolteMO":"Récolte MO ",
+        "recolteHorsMO":"Récolte hors MO",
+        "ventePieds":"Vente sur pieds",
+        "qteTotale":"Quantité totale",
+        "solde":"Solde",
+        "parcelle":"Parcel",
+        "informationsGenerales":"Informations générales",
+        "qteRecolte":"Quantités récoltées"
+    },
+    "swal":{
+        "ajout":{
+            "titre":"Ajout réussi",
+            "description":"L'élément est ajouté avec succès",
+            "titreErr":"Ajout non réussi",
+            "descriptionErr":"L'élément n'est pas ajouté"
+        },
+        "modification":{
+            "titre":"Modification réussi",
+            "description":"L'élément est modifié avec succès",
+            "titreErr":"Modification non réussi",
+            "descriptionErr":"L'élément n'est pas modifié"
+        },
+        "suppression":{
+            "titre":"Suppression réussi",
+            "description":"L'élement est supprimé avec succès",
+            "titreErr":"Suppression non réussi",
+            "descriptionErr":"L'élément n'est pas supprimé",
+            "titreVal":"Valider la suppression",
+            "descriptionVal":"Voulez-vous supprimer cet élément ?"
+        },
+        "suppressionPlusieurs":{
+            "titre":"Suppression réussi",
+            "description":"Tous les éléments séléctionnés sont supprimés avec succès",
+            "titreErr":"Suppression non réussi",
+            "descriptionErr":"Tous les éléments séléctionnés ne sont pas supprimés",
+            "titreVal":"Valider la suppression",
+            "descriptionVal":"Voulez-vous supprimer ces éléments ?"
+        },
+        "champsObligatoires":"Veuillez renseigner tous les champs obligatoires",
+        "annuler":"Annuler",
+        "ok":"Oui",
+        "erreur":"Erreur ..."
     }
 }

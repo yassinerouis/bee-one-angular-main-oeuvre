@@ -11,6 +11,52 @@
 @import "~bootstrap/scss/bootstrap";
 @import "./assets/scss/fonts";
 @import "./assets/scss/functions";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/_mixins.scss";
+@import "~bootstrap/scss/_functions.scss";
+@import "~bootstrap/scss/_variables.scss";
+
+@mixin rtl() {
+    html[dir=rtl] & {
+      @content;
+    }
+  }
+.p-datatable .p-datatable-header {
+    padding: 0.5rem 0.5rem !important;
+    @include rtl(){
+        float: right;
+      }
+}
+.settings-panel.open {
+    right: 0;
+    box-shadow: 7px 0 80px -9px rgba(0,0,0,.15);
+    margin-top:70px;
+    @include rtl(){
+      left:0;
+      right:auto;
+      box-shadow: 7px 0 80px -9px rgba(0,0,0,.15);
+      margin-top:70px;
+    }
+  }
+.sidebar .nav.sub-menu .nav-item .nav-link {
+    color: #888;
+    padding: 0.75rem 2rem 0.75rem 0.75rem !important;
+    position: relative;
+    font-size: 0.8125rem;
+    line-height: 1;
+    height: auto;
+    border-top: 0;
+    @include rtl(){
+    color: #888;
+    padding: 0.75rem 2rem 0.75rem 0.75rem !important;
+    position: relative;
+    font-size: 0.8125rem;
+    line-height: 1;
+    height: auto;
+    border-top: 0;
+    text-align: right!important;
+    }
+}
 .p-button.p-button-icon-only.p-button-rounded {
     border-radius: 50%;
     height: 2rem;
@@ -34,9 +80,15 @@
 }
 .p-datatable .p-datatable-thead > tr > th {
     padding: 0.5rem 0.5rem !important;
+    @include rtl(){
+        text-align: right;
+    }
 }
 .p-datatable .p-datatable-tbody > tr > td {
     padding: 0.5rem 0.5rem !important;
+    @include rtl(){
+        text-align: right;
+    }
 }
 .p-datatable .p-datatable-header {
     padding: 0.5rem 0.5rem !important;
@@ -45,6 +97,19 @@
     font-size: 0.875rem;
     padding: 0.4375rem 0.4375rem;
     width: 80% !important;
+}
+.col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    @include rtl(){
+        text-align: right;
+    }
+}
+a, div, h1, h2, h3, h4, h5, p, span {
+    text-shadow: none;
+    @include rtl(){
+        text-align: right;
+    }
 }
 /* === Template mixins === */
 @import "./assets/scss/mixins/animation";
@@ -96,4 +161,26 @@
 @import "./assets/scss/layout";
 .p-calendar .p-datepicker {
     min-width: 10% !important; 
+}
+.btn-cancel-consult {
+    color: #ffffff;
+    background: #D32F2F;
+    border: 1px solid #D32F2F;
+    /* text-align: left; */
+    @include rtl(){
+        float: left;
+    }
+}
+.p-inputnumber-input {
+    flex: 1 1 auto;
+    text-align: right!important;
+    @include rtl(){
+        text-align: left!important;
+    }
+}
+.p-3{
+    padding: 1rem !important;
+    @include rtl(){
+        text-align: right;
+    }
 }

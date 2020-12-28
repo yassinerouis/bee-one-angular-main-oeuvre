@@ -20,6 +20,7 @@ export class DeclarationRecolteService {
     return this.http.get(this.url+'getDeclarationsRecolte')
   }
    addDeclarationRecolte(declaration){
+     console.log(declaration)
       return this.http.post(this.url+"createDeclarationRecolte",declaration)
    }
    updateDeclarationRecolte(declaration){

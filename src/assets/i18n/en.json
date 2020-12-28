@@ -1,5 +1,33 @@
 {
+    "raccourcis":{
+        "fertilisation":"fertilization",
+        "irrigation":"irrigation",
+        "floraison":"flowering",
+        "titre":"Shortcuts"
+    },
+    "global":{
+        "langues":"Languages",
+        "pdf":"PDF",
+        "excel":"Excel",
+        "imprimer":"Print",
+        "vueGraphique":"Graphic view",
+        "vueNormale":"Normal view",
+        "vueSynthetique":"Synthetic view",
+        "ajouter":"Add",
+        "supprimer":"Remove",
+        "editer":"Edit",
+        "consulter":"Consult",
+        "fertilisation":"fertilization",
+        "irrigation":"irrigation",
+        "floraison":"flowering",
+        "enregistrer":"Save",
+        "annuler":"Cancel",
+        "modifier":"Update",
+        "fermer":"Close"
+    },
     "primeng": {
+        "afficherDeA":"Show {first} to {last} of {totalRecords} entries",
+        "actions":"Actions",
         "startsWith": "Starts with",
         "contains": "Contains",
         "notContains": "Not contains",
@@ -31,25 +59,74 @@
         "monthNames": ["January","February","March","April","May","June","July","August","September","October","November","December"],
         "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         "today": "Today",
-        "weekHeader": "Wk"
+        "weekHeader": "Wk",
+        "recherche":"Global research",
+        "selectedColumns":"Selected columns ",
+        "choiceColumns":"Columns choice"
     },
     "rendement":{
         "moduleName":"Yield",
         "estimations":"Estimates",
         "recolte":"Harvest",
         "suiviQualitatif":"Qualitative monitoring",
-        "estimationParcelle":"Estimation par parcelle",
-        "suiviGrossissement":"Suivi de grossissement",
-        "profilCalibre":"Profil de calibre",
-        "evolutionCalibre":"Evolution de calibre",
-        "declarationRecolte":"Déclaration de la récolte",
-        "entreeStockProduit":"Entrée stock produit",
-        "expedition":"Expédition",
-        "bonReception":"Bon de réception",
-        "bonFabrication":"Bon de fabrication",
-        "chiffreAffaires":"Chiffre d'affaires",
-        "validationRecolte":"Validation de la récolte",
-        "analyseQualitative":"Analyse qualitative",
-        "agreageFruits":"Agréage des fruits"
+        "estimationParcelle":"Estimate by plot",
+        "suiviGrossissement":"Magnification tracking",
+        "profilCalibre":"Caliber Profile",
+        "evolutionCalibre":"Caliber evolution",
+        "declarationRecolte":"Harvest declaration",
+        "entreeStockProduit":"Product stock entry",
+        "expedition":"Shipping",
+        "bonReception":"Receipt order",
+        "bonFabrication":"Manufacturing order",
+        "chiffreAffaires":"Turnover",
+        "validationRecolte":"Harvest validation",
+        "analyseQualitative":"Qualitative analysis",
+        "agreageFruits":"Fruit approval",
+        "dateRecolte":"Harvest date",
+        "parcelles":"Number of plots harvested",
+        "observations":"Observations",
+        "typeProduit":"Type of product        ",
+        "recolteMO":"Harvest MO",
+        "recolteHorsMO":"Harvest outside MO",
+        "ventePieds":"Sale on feet",
+        "qteTotale":"Total quantity",
+        "solde":"Balance",
+        "parcelle":"Parcel",
+        "informationsGenerales":"General informations",
+        "qteRecolte":"Quantities harvested"
+    },
+    "swal": {
+        "ajout": {
+            "titre": "Successful addition",
+            "description": "The element has been added successfully",
+            "titreErr": "Unsuccessful addition",
+            "descriptionErr": "The element is not added"
+        },
+        "modification": {
+            "titre": "Successful modification",
+            "description": "The element is successfully modified",
+            "titreErr": "Unsuccessful modification",
+            "descriptionErr": "The element is not modified"
+        },
+        "suppression": {
+            "titre": "Successful deletion",
+            "description": "The item is successfully deleted",
+            "titreErr": "Unsuccessful deletion",
+            "descriptionErr": "The element is not deleted",
+            "titreVal": "Validate the deletion",
+            "descriptionVal": "Do you want to delete this item?"
+        },
+        "suppressionPlusieurs": {
+            "titre": "Successful deletion",
+            "description": "All selected items are successfully deleted",
+            "titreErr": "Unsuccessful deletion",
+            "descriptionErr": "All the selected elements are not deleted",
+            "titreVal": "Validate the deletion",
+            "descriptionVal": "Do you want to delete these items?"
+        },
+        "champsObligatoires":"Please complete all mandatory fields",
+        "annuler":"Cancel",
+        "ok":"Yes",
+        "erreur":"Error ..."
     }
 }

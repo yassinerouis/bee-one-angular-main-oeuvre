@@ -4,34 +4,46 @@
 <div *ngIf="!form && !synthetique &&!consult" >
   <div class="page-header">
     <h3 class="page-title">
-      Déclaration de la récolte
+      {{ 'rendement.declarationRecolte' | translate }}
     </h3>
     <div>
     </div>
     <div class="text-right">
-      <button pButton (click)="showForm()" pRipple type="button" icon="pi pi-plus" pTooltip="Ajouter" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3"></button>
-      <button pButton pRipple type="button" (click)="showHideSynthetique()" icon="pi pi-align-justify" pTooltip="Vue synthétique" tooltipPosition="bottom" class="p-button-rounded p-button-help p-mr-2"></button>
-      <button pButton pRipple type="button" icon="pi pi-chart-bar" pTooltip="Vue graphique" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2 mr-3"></button>
-      <button pButton pRipple type="button" (click)="exportExcel()" icon="pi pi-file-excel" pTooltip="Excel" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
-      <button pButton pRipple type="button" (click)="exportPdf()" icon="pi pi-file-pdf" pTooltip="PDF" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
-      <button pButton pRipple type="button" (click)="printPdf()" icon="pi pi-print" pTooltip="Imprimer" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
+      <button pButton (click)="showForm()" pRipple type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3"></button>
+      <button pButton pRipple type="button" (click)="showHideSynthetique()" icon="pi pi-align-justify" pTooltip="{{'global.vueSynthetique'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-help p-mr-2"></button>
+      <button pButton pRipple type="button" icon="pi pi-chart-bar" pTooltip="{{'global.vueGraphique'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2 mr-3"></button>
+      <button pButton pRipple type="button" (click)="exportExcel()" icon="pi pi-file-excel" pTooltip="{{'global.excel'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
+      <button pButton pRipple type="button" (click)="exportPdf()" icon="pi pi-file-pdf" pTooltip="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
+      <button pButton pRipple type="button" (click)="printPdf()" icon="pi pi-print" pTooltip="{{'global.imprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
     </div>
   </div>
   <div class="row">
     <p-table #dt [value]="declarations" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
-      [paginator]="true" currentPageReportTemplate="Afficher {first} à {last} de {totalRecords} entrées"
+      [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
       [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']"
      >
       <ng-template pTemplate="caption">
         <div class="p-d-flex">
           <span class="p-input-icon-left p-ml-auto">
             <i class="pi pi-search"></i>
-            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Recherche globale" />
+            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{'primeng.recherche' |translate}}" />
           </span>
-          <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header"
-          selectedItemsLabel="{0} colonnes sélectionnées" [style]="{minWidth: '200px'}" placeholder="Choix d'affichage"></p-multiSelect>  
-          <button *ngIf="selectedDeclarations.length>0" pButton pRipple label="Supprimer({{selectedDeclarations.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedDeclarations()" [disabled]="!selectedDeclarations || !selectedDeclarations.length"></button>
+         <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header"
+          selectedItemsLabel="{0} {{'primeng.selectedColumns'|translate}}" [style]="{minWidth: '200px'}" placeholder="{{'primeng.choiceColumns'|translate}}"
+          class="multiselect-custom">
+          <ng-template let-value pTemplate="selectedItems">
+            <div class="country-placeholder">
+              {{selectedColumns.length}}  {{'primeng.selectedColumns'|translate}}
+            </div>
+          </ng-template>
+          <ng-template let-country pTemplate="item">
+            <div class="country-item">
+              <div>{{'rendement.'+country.header|translate}}</div>
+            </div>
+          </ng-template>
+        </p-multiSelect>
+          <button *ngIf="selectedDeclarations.length>0" (onChange)="showSelected()" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedDeclarations.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedDeclarations()" [disabled]="!selectedDeclarations || !selectedDeclarations.length"></button>
         </div>
       </ng-template>
       <ng-template pTemplate="header" let-columns>
@@ -42,22 +54,22 @@
           <th *ngFor="let col of columns">
             <div *ngIf="col.field == 'parcelles' || col.field == 'RecolteMO'|| col.field == 'RecolteHorsMO' || col.field == 'VentePieds'|| col.field == 'QteTotale'" 
             class="p-d-flex p-jc-between p-ai-center">
-              {{col.header}}
+              {{'rendement.'+col.header |translate}}
               <p-columnFilter type="numeric" field="{{col.field}}" display="menu"></p-columnFilter>
             </div>
             <div *ngIf="col.field == 'Observations' " 
             class="p-d-flex p-jc-between p-ai-center">
-              {{col.header}}
+            {{'rendement.'+col.header |translate}}
               <p-columnFilter type="text" field="{{col.field}}" display="menu"></p-columnFilter>
             </div>
             <div *ngIf="col.field == 'DateRecolte'" class="p-d-flex p-jc-between p-ai-center">
-              {{col.header}}
+              {{'rendement.'+col.header |translate}}
               <p-columnFilter type="date" field="{{col.field}}" display="menu"></p-columnFilter>            
             </div>
           </th>
           <th style="width: 8rem">
             <div class="p-d-flex p-jc-between p-ai-center">
-              Actions
+              {{'primeng.actions'|translate}}
             </div>
           </th>
         </tr>
@@ -70,12 +82,12 @@
           <td *ngFor="let col of columns">
             <div *ngIf="col.field=='DateRecolte'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
             <div *ngIf="col.field!='DateRecolte'&& typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>
-            <div *ngIf="col.field!='DateRecolte' && typeof(declaration[col.field])=='number'" class="text-right">{{declaration[col.field] }}</div>
+            <div *ngIf="col.field!='DateRecolte' && typeof(declaration[col.field])=='number'" [ngClass]="{'text-left':ar , 'text-right': !ar}">{{declaration[col.field] }}</div>
           </td>
           <td class="text-center">
-            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID[0])" icon="pi pi-eye" pTooltip="Consulter" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
-            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="Editer" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
-            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="Supprimer" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
+            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID[0])" icon="pi pi-eye" pTooltip="{{'global.consulter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
+            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="{{'global.editer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
+            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
           </td>
         </tr>
       </ng-template>
@@ -93,26 +105,25 @@
   <div *ngIf="synthetique &&!consult" >
     <div class="page-header">
   <h3 class="page-title">
-    Déclaration de la récolte
+    {{ 'rendement.declarationRecolte' | translate }}
   </h3>
   <div class="text-right">
-    <button pButton pRipple type="button" (click)="showHideSynthetique()" icon="pi pi-bars" pTooltip="Vue normale" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3"></button>
-    <button pButton pRipple type="button" (click)="exportDetailsExcel()" icon="pi pi-file-excel" pTooltip="Excel" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
-    <button pButton pRipple type="button" (click)="exportDetailsPdf()" icon="pi pi-file-pdf" pTooltip="PDF" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
-    <button pButton pRipple type="button" (click)="printDetailsPdf()" icon="pi pi-print" pTooltip="Imprimer" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
-
+    <button pButton pRipple type="button" (click)="showHideSynthetique()" icon="pi pi-bars" pTooltip="{{'global.vueNormale'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3"></button>
+    <button pButton pRipple type="button" (click)="exportDetailsExcel()" icon="pi pi-file-excel" pTooltip="{{'global.excel'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
+    <button pButton pRipple type="button" (click)="exportDetailsPdf()" icon="pi pi-file-pdf" pTooltip="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
+    <button pButton pRipple type="button" (click)="printDetailsPdf()" icon="pi pi-print" pTooltip="{{'global.imprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
   </div>
 </div>
   <div class="row">
   <p-table #dt1 [value]="detailsDeclarations" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
     [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
-    [paginator]="true" currentPageReportTemplate="Afficher {first} à {last} de {totalRecords} entrées"
+    [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
     [globalFilterFields]="['Ref','designation','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']">
     <ng-template pTemplate="caption">
       <div class="p-d-flex">
         <span class="p-input-icon-left p-ml-auto">
           <i class="pi pi-search"></i>
-          <input pInputText type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Recherche globale" />
+          <input pInputText type="text" (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="{{'primeng.recherche' |translate}}" />
         </span>
       </div>
     </ng-template>
@@ -120,43 +131,46 @@
       <tr>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Date de récolte
+            {{'rendement.dateRecolte' | translate}}
             <p-columnFilter type="date" field="DateRecolte" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Parcelle
+            {{'rendement.parcelles' | translate}}
             <p-columnFilter type="text" field="Ref" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Type du produit
+            {{'rendement.typeProduit' | translate}}
+
             <p-columnFilter type="text" field="designation" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Récolte MO
+            {{'rendement.recolteMO' | translate}}
+
             <p-columnFilter type="numeric" field="RecolteMO" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Récolte hors MO
+            {{'rendement.recolteHorsMO' | translate}}
             <p-columnFilter type="numeric" field="RecolteHorsMO" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Vente sur pieds
+            {{'rendement.ventePieds' | translate}}
+
             <p-columnFilter type="numeric" field="VentePieds" display="menu"></p-columnFilter>
           </div>
         </th>
         <th>
           <div class="p-d-flex p-jc-between p-ai-center">
-            Quantité totale
+            {{'rendement.qteTotale' | translate}}
             <p-columnFilter type="numeric" field="QteTotale" display="menu"></p-columnFilter>
           </div>
         </th>
@@ -173,23 +187,24 @@
         <td>
           <span class="image-text">{{declaration.designation}}</span>
         </td>
-        <td class="text-right">
+        <td  [ngClass]="{'text-left':ar , 'text-right': !ar}">
           {{declaration.RecolteMO}}
         </td>
-        <td class="text-right">
+        <td  [ngClass]="{'text-left':ar , 'text-right': !ar}">
           {{declaration.RecolteHorsMO}}
         </td>
-        <td class="text-right">
+        <td  [ngClass]="{'text-left':ar , 'text-right': !ar}">
           {{declaration.VentePieds}}
         </td> 
-        <td class="text-right">
+        <td  [ngClass]="{'text-left':ar , 'text-right': !ar}">
           {{declaration.QteTotale}}
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="8">Aucune déclaration de récolte n'est trouvée</td>
+        <td colspan="8" *ngIf="ar">لا يوجد اي اعلان حصاد عندكم</td>
+        <td colspan="8" *ngIf="!ar">Aucune déclaration de récolte n'est trouvée</td>
       </tr>
     </ng-template>
   </p-table>
@@ -200,20 +215,20 @@
 -->
   <div *ngIf="form && !synthetique && !consult">
     <div class="text-right">
-      <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
     </div>
     <div class="row">
       <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-4"> Informations générales</h5>
+            <h5 class="card-title mb-4"> {{'rendement.informationsGenerales'|translate}}</h5>
               <div class="row">
                 <div class="col-md-12 mb-3" >
-                  <label for="float-input">Date de récolte</label>
+                  <label for="float-input">{{'rendement.dateRecolte'|translate}}</label>
                   <p-calendar [(ngModel)]="declaration.date_recolte" class="date" [maxDate]="currentDate" [style]="{'width': '100%'}"></p-calendar>
                 </div>
                 <div class="col-md-12">
-                  <label for="float-input">Observations</label>
+                  <label for="float-input">{{'rendement.observations'|translate}}</label>
                   <textarea rows="1" cols="30" [style]="{'width': '100%'}" pInputTextarea autoResize="autoResize" [(ngModel)]="declaration.observations"></textarea>
                 </div>
               </div>
@@ -226,16 +241,16 @@
       <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-4">Quantités récoltés</h5>
+            <h5 class="card-title mb-4">{{'rendement.qteRecolte'|translate}}</h5>
             <div class="row" style="background-color:#F7F7F7; padding-top: 17px; border-radius:5px; margin-bottom: 10px;">
-              <div class="col-md-2">Parcelle</div>
-              <div class="col-md">Type de produit</div>
-              <div class="col-md">Récolte MO (kg)</div>
-              <div class="col-md">Récolte hors MO</div>
-              <div class="col-md">Vente sur pieds</div>
-              <div class="col-md">Quantité totale</div>
-              <div class="col-md">Solde</div>
-              <div class="col-md">Actions</div>
+              <div class="col-md-2" [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.parcelle'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.typeProduit'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.recolteMO'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.recolteHorsMO'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.ventePieds'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.qteTotale'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'rendement.solde'|translate}}</div>
+              <div class="col-md"  [ngClass]="{'text-right':ar,'text-left':!ar}">{{'primeng.actions'|translate}}</div>
             </div>
             <div class="row" *ngFor="let parcelle of parcelles; first as first;last as last;">
               <div class="col-md-2">
@@ -253,10 +268,10 @@
               </div>
               <div class="col-md" style="padding-top:10px;">{{parcelle.type}}</div>
               <div class="col-md">
-                <p-inputNumber [min]="0"  mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteMO" class="p-inputtext-sm right" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
+                <p-inputNumber [min]="0" mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteMO" class="p-inputtext-sm right" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
               </div>
               <div class="col-md">
-                <p-inputNumber [min]="0" [style]="{'text-align':'right'}" mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteHorsMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
+                <p-inputNumber [min]="0" mode="decimal" [minFractionDigits]="2" [(ngModel)]="parcelle.RecolteHorsMO" class="p-inputtext-sm" (onBlur)="calculTotal(parcelle)"></p-inputNumber>
 
               </div>
               <div class="col-md">
@@ -269,7 +284,7 @@
               <div class="col-md">                    
                 <p-inputNumber [(ngModel)]="parcelle.Solde" [minFractionDigits]="2" mode="decimal" class="p-inputtext-sm"  [min]="0" ></p-inputNumber>
               </div>
-              <div class="col-md">
+              <div class="col-md" [ngClass]="{'text-right':ar,'text-left':!ar}">
                   <button pButton pRipple type="button" icon="pi pi-minus" class="p-button-rounded p-button-warning mr-1" (click)="removeItem(parcelle)"></button>
                   <button *ngIf="last" pButton pRipple type="button" icon="pi pi-plus"  (click)="addItem()" class="p-button-rounded p-button-info"></button>  
               </div>
@@ -279,24 +294,24 @@
       </div>
     </div>
     <div class="text-right">
-      <button *ngIf="forEdit" pButton pRipple type="button" (click)="update()" label="Modifier" class="p-button-raised p-button-warning"></button>
-      <button *ngIf="!forEdit" pButton pRipple type="button" (click)="save()" label="Enregistrer" class="p-button-raised p-button-primary"></button>
-      <button pButton pRipple type="button" (click)="cancel()" label="Annuler" class="p-button-raised p-button-secondary ml-1"></button>
+      <button *ngIf="forEdit" pButton pRipple type="button" (click)="update()" label="{{'global.modifier'|translate}}" class="p-button-raised p-button-warning"></button>
+      <button *ngIf="!forEdit" pButton pRipple type="button" (click)="save()" label="{{'global.enregistrer'|translate}}" class="p-button-raised p-button-primary"></button>
+      <button pButton pRipple type="button" (click)="cancel()" label="{{'global.annuler'|translate}}" class="p-button-raised p-button-secondary ml-1"></button>
     </div>
   </div>
   <div *ngIf="consult" >
     <div class="text-right">
-      <button type="button" pButton pRipple icon="pi pi-times" (click)="consult=!consult" class="p-button-danger p-ml-auto" pTooltip="Fermer" tooltipPosition="bottom"></button>
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="consult=!consult" class="p-button-danger p-ml-auto btn-cancel-consult" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
     </div>
     <div class="row">
     <div class="col-md-4">
-      <h4>Informations générales</h4>
+      <h4>{{'rendement.informationsGenerales'|translate}}</h4>
       <hr/>
       <p-table  [value]="declarationForConsult">
         <ng-template pTemplate="header">
             <tr>
-                <th>Date de la récolte</th>
-                <th>Observations</th>
+                <th>{{'rendement.dateRecolte'|translate}}</th>
+                <th>{{'rendement.observations'|translate}}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-declaration>
@@ -308,27 +323,27 @@
       </p-table>
     </div>
     <div class="col-md-8">
-      <h4>Quantités Récoltés (kg)</h4>
+      <h4>{{'rendement.qteRecolte'|translate}} (kg)</h4>
       <hr/>
       <p-table [value]="parcelles">
         <ng-template pTemplate="header">
             <tr>
-                <th>Parcelle</th>
-                <th>Récolte MO</th>
-                <th>Récolte hors MO</th>
-                <th>Vente sur pieds</th>
-                <th>Quantité totale</th>
-                <th>Solde</th>
+                <th [style]="{width: '30%'}">{{'rendement.parcelle'|translate}}</th>
+                <th [style]="{width: '10%'}" >{{'rendement.recolteMO'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.recolteHorsMO'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.ventePieds'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.qteTotale'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.solde'|translate}}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-parcelle>
             <tr>
-                <td>{{parcelle.designation}}</td>
-                <td>{{parcelle.RecolteMO}}</td>
-                <td>{{parcelle.RecolteHorsMO}}</td>
-                <td>{{parcelle.VentePieds}}</td>
-                <td>{{parcelle.QteTotale}}</td>
-                <td>{{parcelle.Solde}}</td>
+                <td [style]="{width: '30%'}">{{parcelle.designation}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.RecolteMO}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.RecolteHorsMO}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.VentePieds}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.QteTotale}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.Solde}}</td>
             </tr>
         </ng-template>
       </p-table>

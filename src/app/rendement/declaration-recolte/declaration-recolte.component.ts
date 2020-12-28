@@ -1,3 +1,4 @@
+import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'ngx-cookie-service';
 import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
 import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
@@ -47,13 +48,20 @@ export class DeclarationRecolteComponent implements OnInit {
   synthetique = false
   form=false;
 
-  constructor(public datepipe: DatePipe,private cookieService:CookieService,private exportService:ExportService,
+  constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
     private declarationRecolteService:DeclarationRecolteService,private parcelleCulturaleService:ParcelleCulturaleService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
 
+  getSwalInteractions(){
+    this.translateService.get(['swal']).subscribe(translations=>{
+      this.swalInteractions = translations.swal
+    })
+  }
+
   save(){
+    this.getSwalInteractions()
     let declarationRecolte = {
       date_recolte:this.declaration.date_recolte,
       observations:this.declaration.observations,
@@ -63,16 +71,23 @@ export class DeclarationRecolteComponent implements OnInit {
       parcels:this.parcelles
     }
     this.declarationRecolteService.addDeclarationRecolte(declarationRecolte).subscribe(res=>{
+      console.log(res)
       if(res[0].message=="ajout reussi"){
         Swal.fire(
-          'Ajout réussi',
-          'La déclaration de la récolte est ajoutée avec succès',
+          this.swalInteractions.ajout.titre,
+          this.swalInteractions.ajout.description,
           'success'
         )
         this.showForm()
         this.ngOnInit()
+      }else{
+        Swal.fire({
+          icon: 'error',
+          title: this.swalInteractions.ajout.titreErr,
+          text:  this.swalInteractions.ajout.descriptionErr
+        })
       }
-    })
+    },err=>console.log(err))
   }
 cols:any
 _selectedColumns:any
@@ -116,15 +131,26 @@ transformDateDetails(declarations){
   return declarationsWithTransformedDate
 }
 ids
+ar = false
+swalInteractions:any
   ngOnInit() {
+    this.selectedDeclarations=[]
+    if(localStorage.getItem('lang')=='ar'){
+      this.ar=true 
+    }
+    else{
+      this.ar=false
+    }
+    console.log(this.swalInteractions)
+    this.ids=[]
     this.cols = [
-      { field: 'DateRecolte', header: 'Date de récolte' },
-      { field: 'parcelles', header: 'Parcelles' },
-      { field: 'Observations', header: 'Observations' },
-      { field: 'RecolteMO', header: 'Récolte MO' },
-      { field: 'RecolteHorsMO', header: 'Récolte Hors MO' },
-      { field: 'VentePieds', header: 'Vente sur pieds' },
-      { field: 'QteTotale', header: 'Quantité totale' },
+      { field: 'DateRecolte', header: 'dateRecolte' },
+      { field: 'parcelles', header: 'parcelles' },
+      { field: 'Observations', header: 'observations' },
+      { field: 'RecolteMO', header: 'recolteMO' },
+      { field: 'RecolteHorsMO', header: 'recolteHorsMO' },
+      { field: 'VentePieds', header: 'ventePieds' },
+      { field: 'QteTotale', header: 'qteTotale' },
   ];
   this._selectedColumns = this.cols;
 
@@ -212,6 +238,7 @@ ids
 
   //pour modifier la déclaration de la récolte
   update(){
+    this.getSwalInteractions()
     let declarationRecolte = {
       id:this.id,
       date_recolte:this.declaration.date_recolte,
@@ -222,46 +249,58 @@ ids
       console.log(res)
       if(res[0].message=="ajout reussi"){
         Swal.fire(
-          'Ajout réussi',
-          'La déclaration de la récolte est modifiée avec succès',
+          this.swalInteractions.modification.titre,
+          this.swalInteractions.modification.description,
           'success'
         )
         this.showForm()
         this.ngOnInit()
         this.forEdit = false
+      }else{
+        {
+          Swal.fire({
+            icon: 'error',
+            title:  this.swalInteractions.modification.titreErr,
+            text:  this.swalInteractions.modification.descriptionErr,
+          })
+        }
       }
     })
   }
+  showSelected(){
+console.log(this.selectedColumns)
+  }
     //pour supprimer la déclaration de la récolte
   delete(id){
+    this.getSwalInteractions()
     Swal.fire({
-      title: 'Valider la suppression',
-      text: "Voulez-vous supprimer cet élément ?",
+      title: this.swalInteractions.suppression.titreVal,
+      text: this.swalInteractions.suppression.descriptionVal,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      cancelButtonText:'Annuler',
-      confirmButtonText: 'Oui'
+      cancelButtonText: this.swalInteractions.annuler,
+      confirmButtonText:  this.swalInteractions.ok
     }).then((result) => {
       if (result.value) {
         this.declarationRecolteService.deleteDeclarationRecolte(id).subscribe(res=>{
+          console.log(res[0])
           if(res[0].message=="ajout reussi"){
             Swal.fire(
-              'Supprimée !',
-              'La déclaration de la récolte est supprimée avec succès',
+              this.swalInteractions.suppression.titreVal,
+              this.swalInteractions.modification.description,
               'success'
             )
             this.ngOnInit()
           }else{
             Swal.fire({
               icon: 'error',
-              title: 'Erreur...',
-              text: 'L\'éléments n\'est pas supprimé !',
-            }
-            )
+              title:  this.swalInteractions.suppression.titreErr,
+              text: this.swalInteractions.modification.descriptionErr,
+            })
           }
-        })
+        },err=>console.log(err))
       }
     })
   }
@@ -373,6 +412,7 @@ ids
   }
   //Ajouter un nouveau élément à la table si l'élément courant est valide
   addItem(){
+    this.getSwalInteractions()
     if(this.parcelles[this.parcelles.length-1].RecolteMO&&this.parcelles[this.parcelles.length-1].Solde&&
       this.parcelles[this.parcelles.length-1].RecolteHorsMO&&this.parcelles[this.parcelles.length-1].Solde &&
       this.parcelles[this.parcelles.length-1].ID_Parcelle_Culturale){
@@ -391,14 +431,15 @@ ids
     else{
       Swal.fire({
         icon: 'error',
-        title: 'Erreur...',
-        text: 'Veuillez renseigner tous les champs obligatoires',
+        title: this.swalInteractions.erreur,
+        text: this.swalInteractions.champsObligatoires
       }
       )
     }  
   }
   //supprimer un élément de la table s'il n'est pas le seul, et s'il est le seul on le vide
   removeItem(parcelle){
+
     console.log(this.parcelles.indexOf(parcelle))
     if(this.parcelles.length==1){
       this.parcelles[0]={
@@ -435,6 +476,7 @@ ids
   }
   selectedDeclarations=[]
   deleteSelectedDeclarations(){
+    this.getSwalInteractions()
     let ids = []
     this.selectedDeclarations.forEach(element=>{
       ids.push(element.ID[0])
@@ -444,29 +486,29 @@ ids
       this.delete(ids[0])
     }else{
       Swal.fire({
-        title: 'Valider la suppression',
-        text: "Voulez-vous supprimer ces "+this.selectedDeclarations.length+" éléments?",
+        title: this.swalInteractions.suppressionPlusieurs.titreVal,
+        text: this.swalInteractions.suppressionPlusieurs.descriptionVal + "("+this.selectedDeclarations.length+")",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        cancelButtonText:'Annuler',
-        confirmButtonText: 'Oui'
+        cancelButtonText:this.swalInteractions.annuler,
+        confirmButtonText: this.swalInteractions.ok
       }).then((result) => {
         if (result.value) {
           this.declarationRecolteService.deleteDeclarationsRecolte(ids).subscribe(res=>{
             if(res[0].message=="ajout reussi"){
               Swal.fire(
-                'Supprimée !',
-                'Tous les éléments sont supprimés avec succès',
+                this.swalInteractions.suppressionPlusieurs.titre,
+                this.swalInteractions.suppressionPlusieurs.description,
                 'success'
               )
               this.ngOnInit()
             }else{
               Swal.fire({
                 icon: 'error',
-                title: 'Erreur...',
-                text: 'Les éléments ne sont pas supprimés !',
+                title: this.swalInteractions.suppressionPlusieurs.titreErr,
+                text:   this.swalInteractions.suppressionPlusieurs.descriptionErr
               }
               )
             }
@@ -475,7 +517,6 @@ ids
       })
     }
   }
-
   showOnlyLinkedRisks(event) {
     console.log(event.checked)
     if(event.checked){
