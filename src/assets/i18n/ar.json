@@ -10,7 +10,7 @@
         "pdf":"بي دي إف ",
         "excel":"اكسل",
         "imprimer":"طباعة",
-        "vueGraphique":"عرض الرسم",
+        "vueGraphique":"عرض المبيان",
         "vueSynthetique":"عرض تحليلي",
         "vueNormale":"عرض عادي",
         "ajouter":"أضف",
@@ -20,7 +20,9 @@
          "enregistrer":"حفظ",
         "annuler":"الغاء",
         "modifier":"تغيير",
-        "fermer":"اغلاق"
+        "fermer":"اغلاق",
+        "choixMois":"اختيار الشهر",
+        "choixAnnee":"اختيار السنة"
     },
     "primeng": {
         "afficherDeA":"إظهار {first} إلى {last} من {totalRecords} من الإدخالات",
@@ -59,7 +61,8 @@
         "weekHeader": "يوم",
         "recherche":"البحث العام",
         "selectedColumns":"عمود مختار",
-        "choiceColumns":"اختيار الاعمدة"
+        "choiceColumns":"اختيار الاعمدة",
+        "tableVide":"الجدول فارغ"
     },
     "rendement":{
         "moduleName":"المحصول",
@@ -81,6 +84,7 @@
         "agreageFruits":"الموافقة على الفاكهة",
         "dateRecolte":"تاريخ الحصاد",
         "parcelles":"عدد قطع الأراضي المحصودة",
+        "parcelle_recolte":"الأرضية المحصودة",
         "observations":"الملاحظات",
         "typeProduit":"نوع المنتوج",
         "recolteMO":"حصاد مو",
@@ -90,7 +94,8 @@
         "solde":"مبيعات",
         "parcelle":"القطعة الارضية",
         "informationsGenerales":"معلومات عامة",
-        "qteRecolte":"كمية الحصاد"
+        "qteRecolte":"كمية الحصاد",
+        "choixProduit":"اختيار المنتج(القطعة الارضية)"
     },    "swal":{
         "ajout":{
             "titre":"تمت الاضافة",

@@ -69,6 +69,7 @@
     -moz-transition: width $action-transition-duration $action-transition-timing-function;
     -ms-transition: width $action-transition-duration $action-transition-timing-function;
     color: $navbar-menu-color;
+    background-color: #fefefe;
     padding-left: 24px;
     padding-right: 24px;
     width: calc(100% - #{$sidebar-width-lg});
@@ -415,4 +416,7 @@
     box-shadow: 7px 0 80px -9px rgba(0,0,0,.15);
     margin-top:70px;
   }
+}
+.flag-pic{
+  width:2rem !important;
 }

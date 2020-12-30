@@ -16,6 +16,7 @@ import { DOCUMENT } from '@angular/common';
 export class NavbarComponent implements OnInit {
   public iconOnlyToggled = false;
   public sidebarToggled = false;
+  lang
   clickItem1(){console.log("hahahaha")}
   items = []
   constructor(@Inject(DOCUMENT) private document: Document,config: NgbDropdownConfig,private route:Router,private languageservice:LanguageService,private translateService:TranslateService) {
@@ -33,6 +34,7 @@ export class NavbarComponent implements OnInit {
   }
   changeLanguage(lang?){
     if(!lang){lang=localStorage.getItem('lang')}
+    this.lang=lang
     this.languageservice.translate(lang)
     if(localStorage.getItem('lang')=='ar'){
       document.getElementsByTagName('html')[0].setAttribute('dir', 'rtl');

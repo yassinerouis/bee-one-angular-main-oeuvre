@@ -1,5 +1,8 @@
+import { LanguageService } from 'src/app/services/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
-import { CookieService } from 'ngx-cookie-service';
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
 import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
 import { Component, Input, OnInit } from '@angular/core';
@@ -9,8 +12,10 @@ import 'jspdf-autotable'
 import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
+import { filter } from '@amcharts/amcharts4/.internal/core/utils/Iterator';
 
  // Ce Component sert à la gestion de la declaration de la recolte
+ am4core.useTheme(am4themes_animated);
 
 const doc = new jsPDF()
 @Component({
@@ -47,9 +52,14 @@ export class DeclarationRecolteComponent implements OnInit {
   declaration={date_recolte : new Date(),observations:null}
   synthetique = false
   form=false;
+  cols:any
+  _selectedColumns:any
+  transform = true
+  transformDetails = true
+  selectedDeclarations=[]
 
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
-    private declarationRecolteService:DeclarationRecolteService,private parcelleCulturaleService:ParcelleCulturaleService) {
+    private declarationRecolteService:DeclarationRecolteService,public lang:LanguageService,private parcelleCulturaleService:ParcelleCulturaleService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
@@ -89,8 +99,7 @@ export class DeclarationRecolteComponent implements OnInit {
       }
     },err=>console.log(err))
   }
-cols:any
-_selectedColumns:any
+
 @Input() get selectedColumns(): any[] {
   return this._selectedColumns;
 }
@@ -102,8 +111,7 @@ set selectedColumns(val: any[]) {
 typeof(x){
   return typeof(x);
 }
-transform = true
-transformDetails = true
+
 transformDate(declarations){
   let declarationsWithTransformedDate = declarations
   if(this.transform){
@@ -131,16 +139,13 @@ transformDateDetails(declarations){
   return declarationsWithTransformedDate
 }
 ids
-ar = false
+data = [];
 swalInteractions:any
+names = [];
+
   ngOnInit() {
+    this.reloadData()
     this.selectedDeclarations=[]
-    if(localStorage.getItem('lang')=='ar'){
-      this.ar=true 
-    }
-    else{
-      this.ar=false
-    }
     console.log(this.swalInteractions)
     this.ids=[]
     this.cols = [
@@ -181,6 +186,102 @@ swalInteractions:any
     })
   }
   declarationForConsult =[]
+  reloadData(){
+    this.data = []
+    console.log(this.filtre)
+    am4core.useTheme(am4themes_animated);
+  // Themes end
+  let chart = am4core.create("chartdiv", am4charts.XYChart);
+  
+  let value = 0;
+  this.names = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25",
+  "26",
+  "27",
+  "28",
+  "29",
+  "30",
+  "31"
+  ];
+    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
+      console.log("hahaha")
+      this.declarationRecolteService.getDetailsDeclarationForProductAndPeriode(this.filtre).subscribe(result=>{
+        for (var i = 0; i < this.names.length; i++) {
+          value = 0;
+          for(var j = 0;j< result['length'];j++){
+            if(this.names[i]==this.datepipe.transform(result[j].DateRecolte, 'dd')){
+              console.log(this.names[i])
+              console.log(this.datepipe.transform(result[j].DateRecolte, 'dd'))
+              value += result[j].total;
+              console.log(value)
+            }
+          }
+          this.data.push({ category: this.names[i], value: value });
+        }
+        console.log(this.data)
+        chart.data = this.data;
+        let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+        categoryAxis.renderer.grid.template.location = 0;
+        categoryAxis.dataFields.category = "category";
+        categoryAxis.renderer.minGridDistance = 15;
+        categoryAxis.renderer.grid.template.location = 0.5;
+        categoryAxis.renderer.grid.template.strokeDasharray = "1,3";
+        categoryAxis.renderer.labels.template.rotation = -90;
+        categoryAxis.renderer.labels.template.horizontalCenter = "left";
+        categoryAxis.renderer.labels.template.location = 0.5;
+  
+        categoryAxis.renderer.labels.template.adapter.add("dx", function(dx, target) {
+            return -target.maxRight / 2;
+      })
+  
+        let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+        valueAxis.tooltip.disabled = true;
+        valueAxis.renderer.ticks.template.disabled = true;
+        valueAxis.renderer.axisFills.template.disabled = true;
+  
+        let series = chart.series.push(new am4charts.ColumnSeries());
+        series.dataFields.categoryX = "category";
+        series.dataFields.valueY = "value";
+        series.tooltipText = "{valueY.value}";
+        series.sequencedInterpolation = true;
+        series.fillOpacity = 0;
+        series.strokeOpacity = 1;
+        series.columns.template.width = 0.01;
+        series.tooltip.pointerOrientation = "horizontal";
+  
+        let bullet = series.bullets.create(am4charts.CircleBullet);
+  
+        chart.cursor = new am4charts.XYCursor();
+  
+        chart.scrollbarX = new am4core.Scrollbar();
+        chart.scrollbarY = new am4core.Scrollbar();
+      })
+    }
+  }
   consultDeclaration(id){
     this.declarationForConsult.pop()
     this.parcelles = []
@@ -267,9 +368,6 @@ swalInteractions:any
       }
     })
   }
-  showSelected(){
-console.log(this.selectedColumns)
-  }
     //pour supprimer la déclaration de la récolte
   delete(id){
     this.getSwalInteractions()
@@ -329,7 +427,19 @@ console.log(this.selectedColumns)
     this.exportService.exportPdf(columns,'declarationsRecolte.pdf')
   }
   printPdf(){
-    let columns=[
+   /* let columns=[]
+    if(localStorage.getItem('lang')!='ar'){
+      this.translateService.get(['rendement']).subscribe(translations=>{
+        this.selectedColumns.forEach(element=>{
+          columns.push( { header: translations.rendement[element.header], dataKey: element.field})
+        })
+      })
+    }else{
+      this.selectedColumns.forEach(element=>{
+       // columns.push( { header: this.translateService.translations.fr.rendement[element.header], dataKey: element.field})
+      })
+    }*/
+  let columns=[
       { header: 'Date de récolte', dataKey: 'DateRecolte'},
       { header: 'Nombre de parcelles', dataKey: 'parcelles' },
       { header: 'Observations', dataKey: 'Observations' },
@@ -439,7 +549,6 @@ console.log(this.selectedColumns)
   }
   //supprimer un élément de la table s'il n'est pas le seul, et s'il est le seul on le vide
   removeItem(parcelle){
-
     console.log(this.parcelles.indexOf(parcelle))
     if(this.parcelles.length==1){
       this.parcelles[0]={
@@ -474,7 +583,7 @@ console.log(this.selectedColumns)
       this.forEdit = false
     this.form=!this.form
   }
-  selectedDeclarations=[]
+  //supprimer plusieurs declarations à la fois
   deleteSelectedDeclarations(){
     this.getSwalInteractions()
     let ids = []
@@ -517,12 +626,66 @@ console.log(this.selectedColumns)
       })
     }
   }
-  showOnlyLinkedRisks(event) {
-    console.log(event.checked)
+  //selectionner toutes les declarations
+  showOnlySelected(event) {
     if(event.checked){
       this.selectedDeclarations = this.declarations
     }else{
       this.selectedDeclarations=[]
     }
   }
+  copy(){
+    console.log(document.execCommand('copy'))
+  }
+  graphiqueView=false
+  showHideGraphique(){
+    this.graphiqueView=!this.graphiqueView
+  }
+  selectedParcelle
+
+  onChangeParcelle(){
+    this.filterOptions()
+    this.data = []
+    this.ngOnInit()    
+    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
+      this.reloadData() 
+    }
+  }
+
+  selectedMonth=null
+
+  onChangeMonth(e){
+    this.translateService.get(['primeng']).subscribe(res=>{
+      this.selectedMonth=res.primeng.monthNames.indexOf(e.value)+1
+      this.filterOptions()
+    })
+
+    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
+      this.reloadData()
+    }
+  }
+
+  selectedYear=null
+
+  onChangeYear(e){
+    
+    this.selectedYear=e.value.name
+    this.filterOptions()
+    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
+      this.reloadData()
+    }
+  }
+
+  filtre={parcelle:null,debut:null,fin:null}
+
+  filterOptions(){
+    let dayfin=new Date(this.selectedYear, this.selectedMonth, 0).getDate();
+    console.log(dayfin)
+    this.filtre={parcelle:this.selectedParcelle,debut:new Date(this.selectedMonth+"/01/"+this.selectedYear),
+    fin:new Date(this.selectedMonth+"/"+dayfin+"/"+this.selectedYear)}
+    console.log(this.filtre.debut)
+    console.log(this.filtre.fin)
+    return this.filtre;
+  }
+
 }

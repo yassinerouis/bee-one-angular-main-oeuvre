@@ -23,7 +23,9 @@
         "enregistrer":"Save",
         "annuler":"Cancel",
         "modifier":"Update",
-        "fermer":"Close"
+        "fermer":"Close",
+        "choixMois":"Choice of mounth",
+        "choixAnnee":"Choice of year"
     },
     "primeng": {
         "afficherDeA":"Show {first} to {last} of {totalRecords} entries",
@@ -62,7 +64,8 @@
         "weekHeader": "Wk",
         "recherche":"Global research",
         "selectedColumns":"Selected columns ",
-        "choiceColumns":"Columns choice"
+        "choiceColumns":"Columns choice",
+        "tableVide":"The table is empty"
     },
     "rendement":{
         "moduleName":"Yield",
@@ -84,8 +87,9 @@
         "agreageFruits":"Fruit approval",
         "dateRecolte":"Harvest date",
         "parcelles":"Number of plots harvested",
+        "parcelle_recolte":"Plot harvested",
         "observations":"Observations",
-        "typeProduit":"Type of product        ",
+        "typeProduit":"Type of product",
         "recolteMO":"Harvest MO",
         "recolteHorsMO":"Harvest outside MO",
         "ventePieds":"Sale on feet",
@@ -93,7 +97,8 @@
         "solde":"Balance",
         "parcelle":"Parcel",
         "informationsGenerales":"General informations",
-        "qteRecolte":"Quantities harvested"
+        "qteRecolte":"Quantities harvested",
+        "choixProduit":"Choice of product (parcel)"
     },
     "swal": {
         "ajout": {

@@ -10,6 +10,10 @@ export class DeclarationRecolteService {
 
   constructor(private http:HttpClient) {
    }
+   getDetailsDeclarationForProductAndPeriode(filtre){
+     console.log({IDFerme:10002,IDParcelle:filtre.parcelle,debut:filtre.debut,fin:filtre.fin})
+    return this.http.post(this.url+'getDetailForProductAndPeriod',{IDFerme:10002,IDParcelle:filtre.parcelle,debut:filtre.debut,fin:filtre.fin})
+  }
    getDetailsDeclarationRecolte(){
      return this.http.get(this.url+'getDetailsDeclarationsRecolte')
    }

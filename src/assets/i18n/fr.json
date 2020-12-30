@@ -17,11 +17,12 @@
         "supprimer":"Supprimer",
         "editer":"Editer",
         "consulter":"Consulter",
-      
         "enregistrer":"Enregistrer",
         "annuler":"Annuler",
         "modifier":"Modifier",
-        "fermer":"Fermer"
+        "fermer":"Fermer",
+        "choixMois":"Choix du mois",
+        "choixAnnee":"Choix de l'année"
     },
     "primeng": {
         "afficherDeA":"Afficher {first} à {last} de {totalRecords} entrées",
@@ -60,7 +61,8 @@
         "weekHeader": "Jour",
         "recherche":"Recherche globale",
         "selectedColumns":"colonnes sélectionnées",
-        "choiceColumns":"Choix d'affichage"
+        "choiceColumns":"Choix d'affichage",
+        "tableVide":"La table est vide"
     },
     "rendement":{
         "moduleName":"Rendement",
@@ -82,6 +84,7 @@
         "agreageFruits":"Agréage des fruits",
         "dateRecolte":"Date de la récolte",
         "parcelles":"Nombre de parcelles récoltées",
+        "parcelle_recolte":"Parcelle récoltée",
         "observations":"Observations",
         "typeProduit":"Type de produit ",
         "recolteMO":"Récolte MO ",
@@ -91,7 +94,8 @@
         "solde":"Solde",
         "parcelle":"Parcel",
         "informationsGenerales":"Informations générales",
-        "qteRecolte":"Quantités récoltées"
+        "qteRecolte":"Quantités récoltées",
+        "choixProduit":"Choix du produit (parcelle)"
     },
     "swal":{
         "ajout":{
