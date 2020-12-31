@@ -39,7 +39,7 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     TableModule,
     CalendarModule,
-		SliderModule,
+    SliderModule,
 		DialogModule,
 		MultiSelectModule,
 		ContextMenuModule,

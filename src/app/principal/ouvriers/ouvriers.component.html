@@ -186,13 +186,23 @@
                     </div>
                     <div class="col-md-12 mb-3" >
                       
-                      <label for="float-input" cols="100" >{{'mainOeuvre.niveauScolaire'|translate}}  </label>
-                      <input type="text" pInputText style="width:100%;"/>                     
+                <label for="float-input" cols="100" >{{'mainOeuvre.niveauScolaire'|translate}}  </label>
+                <button pButton pRipple (click)="showModalDialog()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+                <p-dropdown [options]="niveaux"  [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                   
+                             
                     </div>
                     <div class="col-md-12" >   
                       <label for="float-input" cols="100" >{{'mainOeuvre.qualification'|translate}}  </label>
                       <input type="text" pInputText style="width:100%;"/>                     
-                    </div>             
+                    </div>
+                    <p-dialog header="Niveau scolaire" [(visible)]="displayModal" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+                        [draggable]="false" [resizable]="false">
+                        <input type="text" pInputText style="width:100%;" [(ngModel)]="niveau"/>                     
+                            <ng-template pTemplate="footer">
+                            <p-button icon="pi pi-check" (click)="addNiveau()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+                            </ng-template>
+                    </p-dialog>
+                  
       </p-tabPanel>
       <p-tabPanel header="{{'mainOeuvre.fonction'|translate}}">
                 <div class="col-md-12" >   

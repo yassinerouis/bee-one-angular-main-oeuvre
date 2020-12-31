@@ -131,6 +131,16 @@ societes = []
 caporals=[]
 typePaie
 primes = []
+displayModal: boolean = false;
+niveaux=[{name:"niveau 1",code:"1"}]
+niveau
+addNiveau(){
+  this.niveaux.push({name:this.niveau,code:(this.niveaux.length+1).toString()})
+  this.displayModal=false
+}
+showModalDialog() {
+  this.displayModal = true;
+}
   ngOnInit() {
     this.primesService.getPrimes().subscribe(primes=>{
       for(var i=0;i<primes['length'];i++){
@@ -146,14 +156,14 @@ primes = []
         this.caporals[i] = {label:caporals[i].mat+":"+caporals[i].nom+" "+caporals[i].prenom,value:caporals[i].id}
       }
     })
+
     this.sfService.getSocietes().subscribe(societes=>{
-      societes.forEach(element => {
-        console.log(element)
-        let societe={id:element.ID,name:element.Rais_Social}
-        this.sfService.getFermesSociete(element.ID).subscribe(fermes=>{
+      for(var i=0;i<societes['length'];i++){
+        let societe={id:societes[i].ID,name:societes[i].Rais_Social}
+        this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
           this.societes.push({societe:societe,fermes:fermes})
         }) 
-      });
+      }
       console.log(this.societes)
      /* for(var i=0;i<societes['length'];i++){
        
