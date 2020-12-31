@@ -2,54 +2,62 @@
   <ul class="nav">
     <li class="nav-item" [ngClass]="{ 'active': true }">
       <a class="nav-link">
-        <span class="menu-title vsm-header">    {{ 'rendement.moduleName' | translate }}
+        <span class="menu-title vsm-header">    {{ 'mainOeuvre.name' | translate }}
         </span>
       </a>
     </li>
-    <li class="nav-item" [ngClass]="{'active' : estimationparcelle.isActive || suivigrossissement.isActive || profilcalibre.isActive || evolutioncalibre.isActive  }">
-      <a class="nav-link" (click)="estimationCollapsed = !estimationCollapsed" [attr.aria-expanded]="estimationCollapsed" aria-controls="ui-basic">
-        <span class="menu-title">{{ 'rendement.estimations' | translate }}</span>
+    <li class="nav-item" [ngClass]="{'active' : link11.isActive || link12.isActive }">
+      <a class="nav-link" (click)="link1 = !link1" [attr.aria-expanded]="link1" aria-controls="ui-basic">
+        <span class="menu-title">{{ 'mainOeuvre.dossierPersonnel.name' | translate }}</span>
         <i class="menu-arrow"></i>
         <i class="mdi mdi mdi-calculator menu-icon"></i>
       </a>
-      <div class="collapse" id="ui-basic" [ngbCollapse]="!estimationCollapsed">
+      <div class="collapse" id="ui-basic" [ngbCollapse]="!link1">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/estimationparcelle" routerLinkActive="active" #estimationparcelle="routerLinkActive">{{ 'rendement.estimationParcelle' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/suivigrossissement" routerLinkActive="active" #suivigrossissement="routerLinkActive">{{ 'rendement.suiviGrossissement' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/profilcalibre" routerLinkActive="active" #profilcalibre="routerLinkActive">{{ 'rendement.profilCalibre' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/evolutioncalibre" routerLinkActive="active" #evolutioncalibre="routerLinkActive">{{ 'rendement.evolutionCalibre' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/ouvriers" routerLinkActive="active" #link11="routerLinkActive">{{ 'mainOeuvre.dossierPersonnel.ouvriers' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/salaries" routerLinkActive="active" #link12="routerLinkActive">{{ 'mainOeuvre.dossierPersonnel.salaries' | translate }}</a></li>
         </ul>
       </div>
     </li>
-    <li class="nav-item" [ngClass]="{'active' : declarationrecolte.isActive || entrestockproduit.isActive || expedition.isActive || bonreception.isActive 
-    || bonfabrication.isActive || chiffreaffaires.isActive || validationrecolte.isActive }">
-      <a class="nav-link" (click)="recolteCollapsed = !recolteCollapsed" [attr.aria-expanded]="recolteCollapsed" aria-controls="ui-basic">
-        <span class="menu-title">{{ 'rendement.recolte' | translate }}</span>
+    <li class="nav-item" [ngClass]="{'active' : link21.isActive || link22.isActive || link23.isActive  }">
+      <a class="nav-link" (click)="link2 = !link2" [attr.aria-expanded]="link2" aria-controls="ui-basic">
+        <span class="menu-title">{{ 'mainOeuvre.pointage.name' | translate }}</span>
         <i class="menu-arrow"></i>
         <i class="mdi mdi mdi-food-apple menu-icon"></i>
       </a>
-      <div class="collapse" id="ui-basic" [ngbCollapse]="!recolteCollapsed">
+      <div class="collapse" id="ui-basic" [ngbCollapse]="!link2">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/declaration-recolte" routerLinkActive="active" #declarationrecolte="routerLinkActive">{{ 'rendement.declarationRecolte' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/entrestockproduit" routerLinkActive="active" #entrestockproduit="routerLinkActive">{{ 'rendement.entreeStockProduit' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/expedition" routerLinkActive="active" #expedition="routerLinkActive">{{ 'rendement.expedition' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/bonreception" routerLinkActive="active" #bonreception="routerLinkActive">{{ 'rendement.bonReception' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/bonfabrication" routerLinkActive="active" #bonfabrication="routerLinkActive">{{ 'rendement.bonFabrication' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/chiffreaffaires" routerLinkActive="active" #chiffreaffaires="routerLinkActive">{{ 'rendement.chiffreAffaires' | translate }}</a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="/rendement/validationrecolte" routerLinkActive="active" #validationrecolte="routerLinkActive">{{ 'rendement.validationRecolte' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="/mainoeuvre/presence" routerLinkActive="active" #link21="routerLinkActive">{{ 'mainOeuvre.pointage.presence' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="/mainoeuvre/pointage-avance" routerLinkActive="active" #link22="routerLinkActive">{{ 'mainOeuvre.pointage.pointageAvance' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="/mainoeuvre/suivi-recolte" routerLinkActive="active" #link23="routerLinkActive">{{ 'mainOeuvre.pointage.suiviRecolte' | translate }}</a></li>
         </ul>
       </div>
     </li>
-    <li class="nav-item" [ngClass]="{ 'active' : analysequalitative.isActive || agreagefruits.isActive }">
-      <a class="nav-link" (click)="suiviQualitativeCollapsed = !suiviQualitativeCollapsed"  [attr.aria-expanded]="suiviQualitativeCollapsed" aria-controls="auth">
-        <span class="menu-title">{{ 'rendement.suiviQualitatif' | translate }}</span>
+    <li class="nav-item" [ngClass]="{'active' : link31.isActive || link32.isActive   }">
+      <a class="nav-link" (click)="link3 = !link3" [attr.aria-expanded]="link3" aria-controls="ui-basic">
+        <span class="menu-title">{{ 'mainOeuvre.paie.name' | translate }}</span>
+        <i class="menu-arrow"></i>
+        <i class="mdi mdi mdi-calculator menu-icon"></i>
+      </a>
+      <div class="collapse" id="ui-basic" [ngbCollapse]="!link3">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/preparation-paie" routerLinkActive="active" #link31="routerLinkActive">{{ 'mainOeuvre.paie.preparationPaie' | translate }}</a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/generation-paie" routerLinkActive="active" #link32="routerLinkActive">{{ 'mainOeuvre.paie.generationPaie' | translate }}</a></li>
+        </ul>
+      </div>
+    </li>
+    <li class="nav-item" [ngClass]="{ 'active' : link41.isActive || link42.isActive || link43.isActive || link44.isActive }">
+      <a class="nav-link" (click)="link4 = !link4"  [attr.aria-expanded]="link4" aria-controls="auth">
+        <span class="menu-title">{{ 'mainOeuvre.etat.name' | translate }}</span>
         <i class="menu-arrow"></i>
         <i class="mdi mdi mdi-monitor-multiple menu-icon"></i>
       </a>
-      <div class="collapse" id="auth" [ngbCollapse]="!suiviQualitativeCollapsed">
+      <div class="collapse" id="auth" [ngbCollapse]="!link4">
         <ul class="nav flex-column sub-menu">
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/analyse-qualitative" routerLinkActive="active" #analysequalitative="routerLinkActive">{{ 'rendement.analyseQualitative' | translate }} </a></li>
-          <li class="nav-item"> <a class="nav-link" routerLink="rendement/agreage-fruits" routerLinkActive="active" #agreagefruits="routerLinkActive"> {{ 'rendement.agreageFruits' | translate }} </a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/etat-personnel" routerLinkActive="active" #link41="routerLinkActive">{{ 'mainOeuvre.etat.etatPersonnels' | translate }} </a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/etat-pointage" routerLinkActive="active" #link42="routerLinkActive"> {{ 'mainOeuvre.etat.etatPointage' | translate }} </a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/bilan-activites" routerLinkActive="active" #link43="routerLinkActive">{{ 'mainOeuvre.etat.bilanActivites' | translate }} </a></li>
+          <li class="nav-item"> <a class="nav-link" routerLink="mainoeuvre/edition-paie" routerLinkActive="active" #link44="routerLinkActive"> {{ 'mainOeuvre.etat.editionPaie' | translate }}</a></li>
         </ul>
       </div>
     </li>

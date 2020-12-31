@@ -1,6 +1,6 @@
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { DeclarationRecolteComponent } from './../../rendement/declaration-recolte/declaration-recolte.component';
+import { OuvriersComponent } from './../../principal/ouvriers/ouvriers.component';
 import { Component, Inject, OnInit } from '@angular/core';
 import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from 'src/app/services/language/language.service';

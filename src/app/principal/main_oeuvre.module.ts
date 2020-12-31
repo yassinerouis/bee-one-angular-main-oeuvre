@@ -1,6 +1,6 @@
+import { OuvriersComponent } from './ouvriers/ouvriers.component';
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { DeclarationRecolteComponent } from './declaration-recolte/declaration-recolte.component';
 import { RouterModule, Routes } from '@angular/router';
 
 import {TableModule} from 'primeng/table';
@@ -25,12 +25,15 @@ import {MessageModule} from 'primeng/message';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import {CookieService} from 'ngx-cookie-service';
 import {CheckboxModule} from 'primeng/checkbox';
+import {TabViewModule} from 'primeng/tabview';
+import {RadioButtonModule} from 'primeng/radiobutton';
+
 const routes: Routes = [
-  { path: 'declaration-recolte', component: DeclarationRecolteComponent }
+  { path: 'ouvriers', component: OuvriersComponent }
 ]
 
 @NgModule({
-  declarations: [DeclarationRecolteComponent],
+  declarations: [OuvriersComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -45,10 +48,12 @@ const routes: Routes = [
     SweetAlert2Module.forRoot(),
     ToastModule,
     FormsModule,
+    RadioButtonModule,
     ReactiveFormsModule,
     InputTextModule,
     ProgressBarModule,
     HttpClientModule,
+    TabViewModule,
     TooltipModule,
     InputTextareaModule,
     InputNumberModule,
@@ -59,4 +64,4 @@ const routes: Routes = [
   providers: [DatePipe,CookieService],
   exports:[TranslateModule]
 })
-export class RendementModule { }
+export class MainOeuvreModule { }

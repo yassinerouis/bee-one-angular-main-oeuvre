@@ -3,8 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 
 
 const routes: Routes = [
-  { path: '', redirectTo: '/rendement', pathMatch: 'full' },
-  { path: 'rendement', loadChildren: () => import('./rendement/rendement.module').then(m => m.RendementModule) },
+  { path: '', redirectTo: '/mainoeuvre', pathMatch: 'full' },
+  { path: 'mainoeuvre', loadChildren: () => import('./principal/main_oeuvre.module').then(m => m.MainOeuvreModule) },
   { path: 'user-pages', loadChildren: () => import('./user-pages/user-pages.module').then(m => m.UserPagesModule) },
   { path: 'error-pages', loadChildren: () => import('./error-pages/error-pages.module').then(m => m.ErrorPagesModule) },
 ];

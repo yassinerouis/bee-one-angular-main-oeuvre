@@ -1,0 +1,438 @@
+<!--
+  Tableau qui affiche les Déclaration de la récolte
+-->
+<div *ngIf="!form && !synthetique &&!consult &&!graphiqueView" >
+  <div class="page-header">
+    <h3 class="page-title">
+      {{ 'mainOeuvre.ouvriers' | translate }}
+    </h3>
+    <div>
+    </div>
+    <div class="text-right">
+      <button pButton (click)="showForm()" pRipple type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-info p-mr-2 mr-3 ml-3"></button>
+      <button pButton pRipple type="button" (click)="exportExcel()" icon="pi pi-file-excel" pTooltip="{{'global.excel'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2"></button>
+      <button pButton pRipple type="button" (click)="exportPdf()" icon="pi pi-file-pdf" pTooltip="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success p-mr-2"></button>
+      <button pButton pRipple type="button" (click)="printPdf()" icon="pi pi-print" pTooltip="{{'global.imprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
+    </div>
+  </div>
+  <div class="row">
+    <p-table #dt [value]="declarations" [scrollable]="true" [style]="{width:'90rem'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+      [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
+      [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
+      [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']">
+      <ng-template pTemplate="colgroup" let-columns>
+        <colgroup>
+          <col style="width:50px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+          <col style="width:100px">
+        </colgroup>
+      </ng-template>
+      <ng-template pTemplate="caption">
+        <div class="p-d-flex">
+          <span class="p-input-icon-left p-ml-auto">
+            <i class="pi pi-search"></i>
+            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{'primeng.recherche' |translate}}" />
+          </span>
+         <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header"
+          selectedItemsLabel="{0} {{'primeng.selectedColumns'|translate}}" [style]="{minWidth: '200px'}" placeholder="{{'primeng.choiceColumns'|translate}}"
+          class="multiselect-custom">
+          <ng-template let-value pTemplate="selectedItems">
+            <div class="country-placeholder">
+              {{selectedColumns.length}}  {{'primeng.selectedColumns'|translate}}
+            </div>
+          </ng-template>
+          <ng-template let-country pTemplate="item">
+            <div class="country-item">
+              <div>{{'mainOeuvre.'+country.header|translate}}</div>
+            </div>
+          </ng-template>
+        </p-multiSelect>
+          <button *ngIf="selectedDeclarations.length>0" (onChange)="showSelected()" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedDeclarations.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedDeclarations()" [disabled]="!selectedDeclarations || !selectedDeclarations.length"></button>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header" let-columns>
+        <tr [style]="{'background-color': '#eff1f2'}">
+          <th style="width: 3rem">
+            <p-checkbox (onChange)="showOnlySelected($event)"></p-checkbox>
+          </th>
+          <th *ngFor="let col of columns">
+            <div *ngIf="col.field == 'parcelles' || col.field == 'RecolteMO'|| col.field == 'RecolteHorsMO' || col.field == 'VentePieds'|| col.field == 'QteTotale'" 
+            class="p-d-flex p-jc-between p-ai-center">
+              {{'mainOeuvre.'+col.header |translate}}
+              <p-columnFilter type="numeric" field="{{col.field}}" display="menu"></p-columnFilter>
+            </div>
+            <div *ngIf="col.field == 'Observations' " 
+            class="p-d-flex p-jc-between p-ai-center">
+            {{'mainOeuvre.'+col.header |translate}}
+              <p-columnFilter type="text" field="{{col.field}}" display="menu"></p-columnFilter>
+            </div>
+            <div *ngIf="col.field == 'DateRecolte'" class="p-d-flex p-jc-between p-ai-center">
+              {{'mainOeuvre.'+col.header |translate}}
+              <p-columnFilter type="date" field="{{col.field}}" display="menu"></p-columnFilter>            
+            </div>
+          </th>
+          <th>
+            <div class="p-d-flex p-jc-between p-ai-center">
+              {{'primeng.actions'|translate}}
+            </div>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-declaration let-columns="columns">
+        <tr>
+          <td>
+            <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedDeclarations"></p-checkbox>
+          </td>
+          <td *ngFor="let col of columns">
+            <div *ngIf="col.field=='DateRecolte'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
+            <div *ngIf="col.field!='DateRecolte'&& typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>
+            <div *ngIf="col.field!='DateRecolte' && typeof(declaration[col.field])=='number'" class="text-right">{{declaration[col.field] }}</div>
+          </td>
+          <td class="text-center">
+            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID[0])" icon="pi pi-eye" pTooltip="{{'global.consulter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
+            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="{{'global.editer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
+            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9">{{'primeng.tableVide'|translate}}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  </div>
+
+<!--
+  Formulaire d'ajout + modification
+-->
+  <div *ngIf="form && !synthetique && !consult && !graphiqueView">
+    <div class="text-right">
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
+    </div>
+    <p-tabView>
+      <p-tabPanel header="{{'mainOeuvre.etatcivil'|translate}}">
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.matricule'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.codeBarre'|translate}}</label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.civilite'|translate}} </label>
+                      <p-dropdown [options]="'mainOeuvre.civilites'|translate"  [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>           
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.nom'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.prenom'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+               
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.CIN'|translate}} </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    
+                    <div class="col-md-12 mb-3" >
+                      <label for="float-input">{{'mainOeuvre.dateNaissance'|translate}}</label>
+                      <p-calendar class="date" [maxDate]="currentDate" [style]="{'width': '100%'}"></p-calendar>
+                    </div>
+               
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.situationFamiliale'|translate}}  </label>
+                      <p-dropdown [options]="'mainOeuvre.situations'|translate"   [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                 
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      <label for="float-input" cols="100" >{{'mainOeuvre.nombreEnfants'|translate}}  </label>
+                      <p-inputNumber [style]="{'width':'100%'}"></p-inputNumber>
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.adresse'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      <label for="float-input" cols="100" >{{'mainOeuvre.tel'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label for="float-input">{{'mainOeuvre.email'|translate}}</label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12 mb-3" >
+                      
+                      <label for="float-input" cols="100" >{{'mainOeuvre.niveauScolaire'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>
+                    <div class="col-md-12" >   
+                      <label for="float-input" cols="100" >{{'mainOeuvre.qualification'|translate}}  </label>
+                      <input type="text" pInputText style="width:100%;"/>                     
+                    </div>             
+      </p-tabPanel>
+      <p-tabPanel header="{{'mainOeuvre.fonction'|translate}}">
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.fonction'|translate}}  </label>
+                  <input type="text" pInputText style="width:100%;"/>                     
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.caporal'|translate}}  </label>
+                  <div class="p-field-checkbox mb-2">
+                      <p-checkbox [(ngModel)]="checked" binary="true" inputId="binary"></p-checkbox>
+                      <label for="binary" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{checked}}</label>
+                  </div>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.attache'|translate}}  </label>
+                  <p-dropdown [autoDisplayFirst]="false" [options]="caporals"  [style]="{'width':'100%','min-width':'100%'}" [showClear]="true" filter="true">
+                    <ng-template let-item pTemplate="selectedItem">
+                      <span >{{item.label}}</span>
+                    </ng-template>
+                    <ng-template let-caporal pTemplate="item">
+                      <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                        <div>{{caporal.label}}</div>     
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+           
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.categorie'|translate}}  </label>
+                  <p-dropdown [options]="[{name: 'M', code: '1'},
+                  {name: 'Mme', code: '2'},
+                  {name: 'Mlle', code: '3'}]"  [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                   
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.dateEmbauche'|translate}}  </label>
+                  <p-calendar class="date" [maxDate]="currentDate" [style]="{'width': '100%'}"></p-calendar>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.cnss'|translate}}  </label>
+                  <p-inputNumber [style]="{'width':'100%'}"></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.anciennete'|translate}}  </label>
+                  <p-inputNumber [style]="{'width':'100%'}"></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.droitConge'|translate}}  </label>
+                  <p-inputNumber  [style]="{'width':'100%'}" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" ></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.congeInitial'|translate}}  </label>
+                  <p-inputNumber [style]="{'width':'100%'}" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" ></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.tauxAssurance'|translate}}  </label>
+                  <p-inputNumber [style]="{'width':'100%'}"></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.matriculeAMC'|translate}}  </label>
+                  <p-inputNumber [style]="{'width':'100%'}"></p-inputNumber>
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.optionAMC'|translate}}  </label>
+                  <p-dropdown [options]="[{name: 'M', code: '1'},
+                  {name: 'Mme', code: '2'},
+                  {name: 'Mlle', code: '3'}]"  [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                      
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.exercice'|translate}}  </label>
+                  <div class="p-field-checkbox mb-2">
+                    <p-checkbox [(ngModel)]="checked1" binary="true" inputId="binary"></p-checkbox>
+                    <label for="binary" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{checked1}}</label>
+                  </div>                   
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.contractuel'|translate}}  </label>
+                  <div class="p-field-checkbox mb-2">
+                    <p-checkbox [(ngModel)]="checked2" binary="true" inputId="binary"></p-checkbox>
+                    <label for="binary" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{checked2}}</label>
+                </div>                  
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.fomationPhyto'|translate}}  </label>
+                  <div class="p-field-checkbox mb-2">
+                    <p-checkbox [(ngModel)]="checked3" binary="true" inputId="binary"></p-checkbox>
+                    <label for="binary" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{checked3}}</label>
+                </div>                    
+                </div>
+                <div class="col-md-12" >   
+                  <label for="float-input" cols="100" >{{'mainOeuvre.obs'|translate}}  </label>
+                  <textarea pInputTextarea [style]="{'width':'100%'}"></textarea>
+                </div>
+      </p-tabPanel>
+      <p-tabPanel header="{{'mainOeuvre.paie.name'|translate}}">
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.salaireBase'|translate}}  </label>
+          <p-inputNumber [style]="{'width':'100%'}" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" ></p-inputNumber>
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.primes'|translate}}  </label>
+          <div class="card">
+            <div class="card-body" style="padding: 0 2rem 0 2rem !important;">
+              <div class="row" style="background-color:#F7F7F7; padding-top: 17px; border-radius:5px; margin-bottom: 10px;">
+                <div class="col-md"  [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'mainOeuvre.primes'|translate}}</div>
+                <div class="col-md"  [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'mainOeuvre.montant'|translate}}</div>
+                <div class="col-md"  [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'primeng.actions'|translate}}</div>
+              </div>
+              <div class="row" *ngFor="let parcelle of parcelles; first as first;last as last;">
+               
+                <div class="col-md">
+                  <p-dropdown [autoDisplayFirst]="false" [options]="primes"  [style]="{'width':'100%','min-width':'100%'}" [showClear]="true" filter="true">
+                    <ng-template let-item pTemplate="selectedItem">
+                      <span >{{item.label}}</span>
+                    </ng-template>
+                    <ng-template let-caporal pTemplate="item">
+                      <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                        <div>{{caporal.label}}</div>     
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+                </div>
+                <div class="col-md">                    
+                  <p-inputNumber [(ngModel)]="parcelle.montant" [style]="{'width':'100%'}" [minFractionDigits]="2" mode="decimal" class="p-inputtext-sm"  [min]="0" ></p-inputNumber>
+                </div>
+                <div class="col-md" [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">
+                    <button pButton pRipple type="button" icon="pi pi-minus" class="p-button-rounded p-button-warning mr-1" (click)="removeItem(parcelle)"></button>
+                    <button *ngIf="last" pButton pRipple type="button" icon="pi pi-plus"  (click)="addItem()" class="p-button-rounded p-button-info"></button>  
+                </div>
+              </div>
+            </div> 
+          </div>
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.unitePaiement'|translate}}  </label>
+          <div class="p-field-radiobutton mb-2" *ngFor="let unite of 'mainOeuvre.unitesPaiement'|translate">
+              <p-radioButton name="unite{{unite.code}}" value="{{unite.name}}" [(ngModel)]="city" inputId="unite{{unite.code}}"></p-radioButton>
+              <label for="unite{{unite.code}}" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{unite.name}}</label>
+          </div>
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.representeEquipe'|translate}}  </label>
+          <div class="p-field-checkbox mb-2">
+            <p-checkbox [(ngModel)]="checked4" binary="true" inputId="binary"></p-checkbox>
+            <label for="binary" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{checked4}}</label>
+        </div>                          
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.modePaiement'|translate}}  </label>
+          <div class="p-field-radiobutton mb-2" *ngFor="let type of 'mainOeuvre.methodePaie'|translate">
+            <p-radioButton name="city{{type.code}}" value="{{type.name}}" [(ngModel)]="typePaie" inputId="{{type.code}}"></p-radioButton>
+            <label for="city1{{type.code}}" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{type.name}}</label>
+        </div>   
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.banque'|translate}}  </label>
+          <p-dropdown [options]="[{name: 'CIH', code: '1'},
+          {name: 'BMCE', code: '2'},
+          {name: 'CA', code: '3'}]"  [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                      
+                          
+        </div>
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.rib'|translate}}  </label>
+          <input type="text" pInputText style="width:100%;"/>                     
+        </div>
+      </p-tabPanel>
+      <p-tabPanel header="{{'mainOeuvre.attachement'|translate}}">
+        <div class="col-md-12" >   
+          <label for="float-input" cols="100" >{{'mainOeuvre.attachement'|translate}}  </label>
+          <div>
+            <div class="p-field-checkbox mb-2" *ngFor="let s of societes">
+              <div class="ml-3">
+                <p-checkbox name="group1" value="{{s.societe.name}}" [(ngModel)]="checkedSocietes" (onChange)="checkSoc(s.societe.name)" inputId="ny"></p-checkbox>
+                <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{s.societe.name}}</label>
+              </div>
+              <div *ngIf="checkedSocietes.indexOf(s.societe.name)>=0" class="ml-5">
+                  <div class="p-field-checkbox mb-2" *ngFor="let ferme of s.fermes">
+                    <p-checkbox name="group1" value="{{ferme.Nom}}" [(ngModel)]="checkedFermes" inputId="ny"></p-checkbox>
+                    <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{ferme.Nom}}</label>
+                  </div>
+                </div>
+            </div>
+          </div>                 
+        </div>
+        <div class="text-center">
+          <button pButton type="button" label="{{'global.enregistrer'|translate}}" icon="pi pi-check" class="p-button mt-4"></button>
+        </div>
+      </p-tabPanel>
+  </p-tabView>
+  </div>
+  <div *ngIf="consult &&!graphiqueView" >
+    <div class="text-right">
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="consult=!consult" class="p-button-danger p-ml-auto btn-cancel-consult" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
+    </div>
+    <h3 class="page-title mb-5">
+      {{ 'mainOeuvre.ouvriers' | translate }} - {{ 'global.consulter' | translate }} 
+    </h3>
+    <div class="row">
+    <div class="col-md-4">
+      <h4>{{'rendement.informationsGenerales'|translate}}</h4>
+      <hr/>
+      <p-table  [value]="declarationForConsult">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>{{'rendement.dateRecolte'|translate}}</th>
+                <th>{{'rendement.observations'|translate}}</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-declaration>
+            <tr>
+                <td>{{declaration.date_recolte | date: 'MM/dd/yyyy'}}</td>
+                <td>{{declaration.observations}}</td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+    <div class="col-md-8">
+      <h4>{{'rendement.qteRecolte'|translate}} (kg)</h4>
+      <hr/>
+      <p-table [value]="parcelles">
+        <ng-template pTemplate="header">
+            <tr>
+                <th [style]="{width: '30%'}">{{'rendement.parcelle'|translate}}</th>
+                <th [style]="{width: '10%'}" >{{'rendement.recolteMO'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.recolteHorsMO'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.ventePieds'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.qteTotale'|translate}}</th>
+                <th [style]="{width: '10%'}">{{'rendement.solde'|translate}}</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-parcelle>
+            <tr>
+                <td [style]="{width: '30%'}">{{parcelle.designation}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.RecolteMO}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.RecolteHorsMO}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.VentePieds}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.QteTotale}}</td>
+                <td [style]="{width: '10%'}" >{{parcelle.Solde}}</td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+  </div>

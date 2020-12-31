@@ -1,10 +1,11 @@
+import { PrimesService } from './../../services/primes/primes.service';
+import { SocieteFermeService } from './../../services/societesFermes/societe-ferme.service';
+import { OuvriersService } from './../../services/ouvriers/ouvriers.service';
 import { LanguageService } from 'src/app/services/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-import { DeclarationRecolteService } from './../../services/declaration-recolte/declaration-recolte.service';
-import { ParcelleCulturaleService } from './../../services/parcelle-culturale/parcelle-culturale.service';
 import { Component, Input, OnInit } from '@angular/core';
 import { MessageService } from "primeng/api";
 import jsPDF from 'jspdf'
@@ -12,19 +13,18 @@ import 'jspdf-autotable'
 import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
-import { filter } from '@amcharts/amcharts4/.internal/core/utils/Iterator';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
-
 const doc = new jsPDF()
 @Component({
-  selector: 'app-declaration-recolte',
-  templateUrl: './declaration-recolte.component.html',
-  styleUrls: ['./declaration-recolte.component.scss'],
+  selector: 'app-ouvrier',
+  templateUrl: './ouvriers.component.html',
+  styleUrls: ['./ouvriers.component.scss'],
   providers: [MessageService]
 })
-export class DeclarationRecolteComponent implements OnInit {
+export class OuvriersComponent implements OnInit {
+
 
   //declaration des variables 
   consult = false
@@ -37,20 +37,13 @@ export class DeclarationRecolteComponent implements OnInit {
   id
   parcelles=[{
     id:1,
-    ID_Parcelle_Culturale:null,
-    designation:"null",
-    type:null,
-    Solde:null,
-    RecolteMO:null,
-    RecolteHorsMO:null,
-    VentePieds:null,
-    QteTotale:null
+    prime:null,
+    montant:"null"
   }]
   msgs=[]
   detailsDeclarations:any
   declarations:any
   declaration={date_recolte : new Date(),observations:null}
-  synthetique = false
   form=false;
   cols:any
   _selectedColumns:any
@@ -59,7 +52,8 @@ export class DeclarationRecolteComponent implements OnInit {
   selectedDeclarations=[]
 
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
-    private declarationRecolteService:DeclarationRecolteService,public lang:LanguageService,private parcelleCulturaleService:ParcelleCulturaleService) {
+    public lang:LanguageService,private ouvriersService:OuvriersService,private sfService:SocieteFermeService,
+    private primesService:PrimesService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
@@ -80,24 +74,7 @@ export class DeclarationRecolteComponent implements OnInit {
       id_profil:1,
       parcels:this.parcelles
     }
-    this.declarationRecolteService.addDeclarationRecolte(declarationRecolte).subscribe(res=>{
-      console.log(res)
-      if(res[0].message=="ajout reussi"){
-        Swal.fire(
-          this.swalInteractions.ajout.titre,
-          this.swalInteractions.ajout.description,
-          'success'
-        )
-        this.showForm()
-        this.ngOnInit()
-      }else{
-        Swal.fire({
-          icon: 'error',
-          title: this.swalInteractions.ajout.titreErr,
-          text:  this.swalInteractions.ajout.descriptionErr
-        })
-      }
-    },err=>console.log(err))
+
   }
 
 @Input() get selectedColumns(): any[] {
@@ -142,192 +119,133 @@ ids
 data = [];
 swalInteractions:any
 names = [];
-
+obs
+city="Espèce"
+checkSoc(s){
+  console.log(s)
+  console.log(this.checkedSocietes)
+  console.log(this.checkedSocietes.indexOf(s))
+}
+checkedSocietes = []
+societes = []
+caporals=[]
+typePaie
+primes = []
   ngOnInit() {
-    this.reloadData()
+    this.primesService.getPrimes().subscribe(primes=>{
+      for(var i=0;i<primes['length'];i++){
+        this.primes[i]={label:primes[i].Nom_prime,value:primes[i].IDPrime}
+      }
+      console.log(this.primes)
+    })
+    this.translateService.get(['mainOeuvre']).subscribe(res=>{
+      this.typePaie=res.mainOeuvre.methodePaie[0].name
+    })
+    this.ouvriersService.getCaporal().subscribe(caporals=>{
+      for(var i=0;i<caporals['length'];i++){
+        this.caporals[i] = {label:caporals[i].mat+":"+caporals[i].nom+" "+caporals[i].prenom,value:caporals[i].id}
+      }
+    })
+    this.sfService.getSocietes().subscribe(societes=>{
+      societes.forEach(element => {
+        console.log(element)
+        let societe={id:element.ID,name:element.Rais_Social}
+        this.sfService.getFermesSociete(element.ID).subscribe(fermes=>{
+          this.societes.push({societe:societe,fermes:fermes})
+        }) 
+      });
+      console.log(this.societes)
+     /* for(var i=0;i<societes['length'];i++){
+       
+      }*/
+    })
+    this.loading = false
     this.selectedDeclarations=[]
     console.log(this.swalInteractions)
     this.ids=[]
+    /**  "matricule":"رقم التسجيل",
+        "codeBarre":"الرمز الشريطي",
+        "nom":"الاسم ",
+        "prenom":"النسب",
+        "civilite":"الجنس",
+        "civilites":[{"name": "سيد", "code": "1"},{"name": "سيدة", "code": "2"},{"name": "انسة", "code": "3"}],
+        "CIN":"رقم البطاقة الوطنية",
+        "dateNaissance":"تاريخ الميلاد",
+        "situationFamiliale":"الوضع الأسري",
+        "situations":[{"name": "(ة)عازب", "code": "1"},
+            {"name": "(ة)متزوج", "code": "2"},
+            {"name": "مطلق(ة)", "code": "3"},
+            {"name": "ارمل(ة)", "code": "4"}],
+        "methodePaie":[{"name": " نقد", "code": "1"},
+            {"name": "شيك", "code": "2"},
+            {"name": "تحويل", "code": "3"}],
+        "unitesPaiement":[{"name": "Day", "code": "1"},
+            {"name": "Unit", "code": "2"}],
+        "traiteSurplus":"",
+        "nombreEnfants":"عدد الاطفال",
+        "adresse":"العنوان",
+        "email":" البريد الالكتروني",
+        "tel":"رقم الهاتف",
+        "niveauScolaire":"المستوى الدراسي",
+        "qualification":"التاهيل",
+        "etatcivil":"الحالة المدنية",
+        "fonction":"الوظيفة",
+        "caporal":"جسدي",
+        "attache":"مرفق بـ",
+        "categorie":"الفئة",
+        "dateEmbauche":"تاريخ التشغيل",
+        "cnss":"رقم الضمان الاجتماعي",
+        "anciennete":"الأقدمية بالأيام",
+        "droitConge":"الحق في الاجازة",
+        "congeInitial":"إجازة أولية",
+        "tauxAssurance":"سعر التأمين",
+        "matriculeAMC":"رقم امس",
+        "optionAMC":"خيار امس",
+        "exercice":"في التمرين",
+        "contractuel":"تعاقدية",
+        "fomationPhyto":"تدريب فيتو",
+        "obs":"ملاحظة",
+        "salaireBase":"المرتب الأساسي",
+        "primes":"الأقساط",
+        "montant":"المبلغ",
+        "unitePaiement":"وحدة الدفع",
+        "representeEquipe":"يمثل فريق",
+        "modePaiement":"طريقة الدفع",
+        "banque":"البنك",
+        "rib":"ريب",
+        "attachement":"مرفق شركة / مزرعة", */
     this.cols = [
-      { field: 'DateRecolte', header: 'dateRecolte' },
-      { field: 'parcelles', header: 'parcelles' },
-      { field: 'Observations', header: 'observations' },
-      { field: 'RecolteMO', header: 'recolteMO' },
-      { field: 'RecolteHorsMO', header: 'recolteHorsMO' },
-      { field: 'VentePieds', header: 'ventePieds' },
-      { field: 'QteTotale', header: 'qteTotale' },
+      { field: 'DateRecolte', header: 'matricule' },
+      { field: 'parcelles', header: 'nom' },
+      { field: 'Observations', header: 'prenom' },
+      { field: 'RecolteMO', header: 'CIN' },
+      { field: 'RecolteHorsMO', header: 'dateNaissance' },
+      { field: 'VentePieds', header: 'fonction' },
+      { field: 'QteTotale', header: 'categorie' },
+      { field: 'VentePieds', header: 'dateEmbauche' },
+      { field: 'QteTotale', header: 'cnss' },
+      { field: 'QteTotale', header: 'anciennete' },
+      { field: 'QteTotale', header: 'exercice' },
+      { field: 'QteTotale', header: 'salaireBase' },
+      { field: 'QteTotale', header: 'unitePaiement' }
+      
   ];
   this._selectedColumns = this.cols;
-
-    this.declarationRecolteService.getDeclarationRecolte().subscribe(res=>{
-      console.log(res)
-      
-      this.declarations=res
-      this.declarations.forEach(element => {
-        
-        element.DateRecolte = new Date(element.DateRecolte)
-      });
-      this.loading = false;
-    })
-    this.declarationRecolteService.getDetailsDeclarationRecolte().subscribe(res=>{
-      this.detailsDeclarations=res
-      this.detailsDeclarations.forEach(element => {
-        element.designation = element.designation==1?'Stockable':'Non Stockable'
-        element.DateRecolte = new Date(element.DateRecolte)
-      });
-      this.loading = false;
-    })
-
-    //recuperer les parcelles culturales
-    this.parcelleCulturaleService.getParcelleCulturale().subscribe(res=>{
-      for(var i=0;i<res['length'];i++){
-        this.listParcelles[i]={label:res[i].Ref +": "+res[i].designation,value:res[i].ID}
-      }
-    })
   }
   declarationForConsult =[]
-  reloadData(){
-    this.data = []
-    console.log(this.filtre)
-    am4core.useTheme(am4themes_animated);
-  // Themes end
-  let chart = am4core.create("chartdiv", am4charts.XYChart);
   
-  let value = 0;
-  this.names = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-  "13",
-  "14",
-  "15",
-  "16",
-  "17",
-  "18",
-  "19",
-  "20",
-  "21",
-  "22",
-  "23",
-  "24",
-  "25",
-  "26",
-  "27",
-  "28",
-  "29",
-  "30",
-  "31"
-  ];
-    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
-      console.log("hahaha")
-      this.declarationRecolteService.getDetailsDeclarationForProductAndPeriode(this.filtre).subscribe(result=>{
-        for (var i = 0; i < this.names.length; i++) {
-          value = 0;
-          for(var j = 0;j< result['length'];j++){
-            if(this.names[i]==this.datepipe.transform(result[j].DateRecolte, 'dd')){
-              console.log(this.names[i])
-              console.log(this.datepipe.transform(result[j].DateRecolte, 'dd'))
-              value += result[j].total;
-              console.log(value)
-            }
-          }
-          this.data.push({ category: this.names[i], value: value });
-        }
-        console.log(this.data)
-        chart.data = this.data;
-        let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-        categoryAxis.renderer.grid.template.location = 0;
-        categoryAxis.dataFields.category = "category";
-        categoryAxis.renderer.minGridDistance = 15;
-        categoryAxis.renderer.grid.template.location = 0.5;
-        categoryAxis.renderer.grid.template.strokeDasharray = "1,3";
-        categoryAxis.renderer.labels.template.rotation = -90;
-        categoryAxis.renderer.labels.template.horizontalCenter = "left";
-        categoryAxis.renderer.labels.template.location = 0.5;
-  
-        categoryAxis.renderer.labels.template.adapter.add("dx", function(dx, target) {
-            return -target.maxRight / 2;
-      })
-  
-        let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-        valueAxis.tooltip.disabled = true;
-        valueAxis.renderer.ticks.template.disabled = true;
-        valueAxis.renderer.axisFills.template.disabled = true;
-  
-        let series = chart.series.push(new am4charts.ColumnSeries());
-        series.dataFields.categoryX = "category";
-        series.dataFields.valueY = "value";
-        series.tooltipText = "{valueY.value}";
-        series.sequencedInterpolation = true;
-        series.fillOpacity = 0;
-        series.strokeOpacity = 1;
-        series.columns.template.width = 0.01;
-        series.tooltip.pointerOrientation = "horizontal";
-  
-        let bullet = series.bullets.create(am4charts.CircleBullet);
-  
-        chart.cursor = new am4charts.XYCursor();
-  
-        chart.scrollbarX = new am4core.Scrollbar();
-        chart.scrollbarY = new am4core.Scrollbar();
-      })
-    }
-  }
   consultDeclaration(id){
     this.declarationForConsult.pop()
     this.parcelles = []
     this.id = id
     this.forEdit = true
-    this.declarationRecolteService.getDetailDeclarationRecolte(id).subscribe(res=>{
-      console.log(res)
-      this.declaration =   {date_recolte : new Date(res[0].DateRecolte),observations:res[0].Observations}
-      this.declarationForConsult.push(this.declaration)
-      for(var i=0;i<res['length'];i++){
-        this.parcelles[i]={
-          id:i+1,
-          designation:res[i].Ref +':'+res[i].nom_produit,
-          ID_Parcelle_Culturale:res[i].ID_Parcelle_Culturale,
-          type:res[i].designation?'Stockable':'Non stockable',
-          Solde:res[i].Solde,
-          RecolteMO:res[i].RecolteMO,
-          RecolteHorsMO:res[i].RecolteHorsMO,
-          VentePieds:res[i].VentePieds,
-          QteTotale:res[i].QteTotale
-        }
-      }
-      this.consult = true
-    })
+
   }
   //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
     this.id = id
     this.forEdit = true
-    this.declarationRecolteService.getDetailDeclarationRecolte(id).subscribe(res=>{
-      this.declaration =   {date_recolte : new Date(res[0].DateRecolte),observations:res[0].Observations}
-      for(var i=0;i<res['length'];i++){
-        this.parcelles[i]={
-          id:i+1,
-          designation:res[i].Ref +':'+res[i].nom_produit,
-          ID_Parcelle_Culturale:res[i].ID_Parcelle_Culturale,
-          type:res[i].designation?'Stockable':'Non stockable',
-          Solde:res[i].Solde,
-          RecolteMO:res[i].RecolteMO,
-          RecolteHorsMO:res[i].RecolteHorsMO,
-          VentePieds:res[i].VentePieds,
-          QteTotale:res[i].QteTotale
-        }
-      }
-      this.form = ! this.form
-    })
+
   }
 
   //annuler l'action (ajouter ou modifier)
@@ -346,27 +264,6 @@ names = [];
       observations:this.declaration.observations,
       parcels:this.parcelles
     }
-    this.declarationRecolteService.updateDeclarationRecolte(declarationRecolte).subscribe(res=>{
-      console.log(res)
-      if(res[0].message=="ajout reussi"){
-        Swal.fire(
-          this.swalInteractions.modification.titre,
-          this.swalInteractions.modification.description,
-          'success'
-        )
-        this.showForm()
-        this.ngOnInit()
-        this.forEdit = false
-      }else{
-        {
-          Swal.fire({
-            icon: 'error',
-            title:  this.swalInteractions.modification.titreErr,
-            text:  this.swalInteractions.modification.descriptionErr,
-          })
-        }
-      }
-    })
   }
     //pour supprimer la déclaration de la récolte
   delete(id){
@@ -382,35 +279,13 @@ names = [];
       confirmButtonText:  this.swalInteractions.ok
     }).then((result) => {
       if (result.value) {
-        this.declarationRecolteService.deleteDeclarationRecolte(id).subscribe(res=>{
-          console.log(res[0])
-          if(res[0].message=="ajout reussi"){
-            Swal.fire(
-              this.swalInteractions.suppression.titreVal,
-              this.swalInteractions.modification.description,
-              'success'
-            )
-            this.ngOnInit()
-          }else{
-            Swal.fire({
-              icon: 'error',
-              title:  this.swalInteractions.suppression.titreErr,
-              text: this.swalInteractions.modification.descriptionErr,
-            })
-          }
-        },err=>console.log(err))
+
       }
     })
   }
   //lors du changement de la parcelle il recupère et affiche le type du produit
   onChange(e){
-    this.parcelleCulturaleService.getTypeProduit(e.value).subscribe(res=>{
-      if(res[0]){
-        this.parcelles[this.parcelles.length-1].type=res[0].designation?'Stockable':'Non stockable'
-      }else{
-        this.parcelles[this.parcelles.length-1].type="Cette parcelle n\' a aucun type de produit"
-      }
-    })
+
   }
   // Début exportation des déclaration de la récolte
   exportPdf() {
@@ -509,33 +384,15 @@ names = [];
         this.exportService.exportExcel('detailsDeclarationsRecolte',table)
       }
       
-    //Pour afficher la vue synthétique
-  showHideSynthetique(){
-    this.synthetique=!this.synthetique
-  }
-  
-  //calcul du total des quantitéss 
-  calculTotal(parcelle){
-    let i = this.parcelles.indexOf(parcelle)
-    console.log(this.parcelles[i].RecolteMO)
-    this.parcelles[i].QteTotale = this.parcelles[i].RecolteMO + this.parcelles[i].RecolteHorsMO + this.parcelles[i].VentePieds
-  }
+
   //Ajouter un nouveau élément à la table si l'élément courant est valide
   addItem(){
     this.getSwalInteractions()
-    if(this.parcelles[this.parcelles.length-1].RecolteMO&&this.parcelles[this.parcelles.length-1].Solde&&
-      this.parcelles[this.parcelles.length-1].RecolteHorsMO&&this.parcelles[this.parcelles.length-1].Solde &&
-      this.parcelles[this.parcelles.length-1].ID_Parcelle_Culturale){
+    if(this.parcelles[this.parcelles.length-1].prime&&this.parcelles[this.parcelles.length-1].montant){
       this.parcelles.push({
         id:this.parcelles.length+1,
-        type:null,
-        designation:null,
-        ID_Parcelle_Culturale:null,
-        Solde:null,
-        RecolteMO:null,
-        RecolteHorsMO:null,
-        VentePieds:null,
-        QteTotale:null
+        prime:null,
+        montant:null
       })
     }
     else{
@@ -553,14 +410,8 @@ names = [];
     if(this.parcelles.length==1){
       this.parcelles[0]={
         id:this.parcelles.length,
-        type:null,
-        designation:null,
-        ID_Parcelle_Culturale:null,
-        Solde:null,
-        RecolteMO:null,
-        RecolteHorsMO:null,
-        VentePieds:null,
-        QteTotale:null
+        prime:null,
+        montant:null
       }
     }else{
       this.parcelles.splice(this.parcelles.indexOf(parcelle),1)
@@ -571,14 +422,8 @@ names = [];
       this.declaration={date_recolte : new Date(),observations:null}
       this.parcelles=[{
         id:1,
-        ID_Parcelle_Culturale:null,
-        designation:"null",
-        type:null,
-        Solde:null,
-        RecolteMO:null,
-        RecolteHorsMO:null,
-        VentePieds:null,
-        QteTotale:null
+        prime:null,
+        montant:null
       }]
       this.forEdit = false
     this.form=!this.form
@@ -605,27 +450,12 @@ names = [];
         confirmButtonText: this.swalInteractions.ok
       }).then((result) => {
         if (result.value) {
-          this.declarationRecolteService.deleteDeclarationsRecolte(ids).subscribe(res=>{
-            if(res[0].message=="ajout reussi"){
-              Swal.fire(
-                this.swalInteractions.suppressionPlusieurs.titre,
-                this.swalInteractions.suppressionPlusieurs.description,
-                'success'
-              )
-              this.ngOnInit()
-            }else{
-              Swal.fire({
-                icon: 'error',
-                title: this.swalInteractions.suppressionPlusieurs.titreErr,
-                text:   this.swalInteractions.suppressionPlusieurs.descriptionErr
-              }
-              )
-            }
-          })
+
         }
       })
     }
   }
+  
   //selectionner toutes les declarations
   showOnlySelected(event) {
     if(event.checked){
@@ -637,19 +467,13 @@ names = [];
   copy(){
     console.log(document.execCommand('copy'))
   }
-  graphiqueView=false
-  showHideGraphique(){
-    this.graphiqueView=!this.graphiqueView
-  }
   selectedParcelle
 
   onChangeParcelle(){
     this.filterOptions()
     this.data = []
     this.ngOnInit()    
-    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
-      this.reloadData() 
-    }
+  
   }
 
   selectedMonth=null
@@ -660,9 +484,7 @@ names = [];
       this.filterOptions()
     })
 
-    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
-      this.reloadData()
-    }
+  
   }
 
   selectedYear=null
@@ -671,9 +493,7 @@ names = [];
     
     this.selectedYear=e.value.name
     this.filterOptions()
-    if(this.selectedParcelle && this.selectedMonth && this.selectedYear){
-      this.reloadData()
-    }
+
   }
 
   filtre={parcelle:null,debut:null,fin:null}
