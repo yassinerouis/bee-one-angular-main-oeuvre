@@ -22,7 +22,9 @@
         "modifier":"Modifier",
         "fermer":"Fermer",
         "choixMois":"Choix du mois",
-        "choixAnnee":"Choix de l'année"
+        "choixAnnee":"Choix de l'année",
+        "true":"Oui",
+        "false":"Non"
     },
     "primeng": {
         "afficherDeA":"Afficher {first} à {last} de {totalRecords} entrées",

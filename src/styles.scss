@@ -15,7 +15,9 @@
 @import "~bootstrap/scss/_mixins.scss";
 @import "~bootstrap/scss/_functions.scss";
 @import "~bootstrap/scss/_variables.scss";
-
+.p-datatable-scrollable-header-box{
+    padding:0 !important;
+}
 @mixin rtl() {
     html[dir=rtl] & {
       @content;
