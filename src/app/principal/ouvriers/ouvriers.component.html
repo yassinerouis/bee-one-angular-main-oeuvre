@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="row">
-    <p-table #dt [value]="ouvriers" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'117rem'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
       [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
       [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']">
