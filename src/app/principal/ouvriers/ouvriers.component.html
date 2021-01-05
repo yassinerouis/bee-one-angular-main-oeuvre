@@ -16,10 +16,11 @@
     </div>
   </div>
   <div class="row">
-    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'117rem'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'90rem'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
       [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
-      [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']">
+      [globalFilterFields]="['Observations','parcelles','RecolteMO','RecolteHorsMO','VentePieds','QteTotale']"
+      >
       <ng-template pTemplate="colgroup" let-columns>
         <colgroup>
           <col style="width:3rem">
@@ -79,14 +80,16 @@
             <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedOuvriers"></p-checkbox>
           </td>
           <td *ngFor="let col of columns">
-            <div *ngIf="col.field == 'Dat_Nai' ||col.field =='Date_Embauche'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
-            <div *ngIf="col.field != 'Dat_Nai' && col.field !='Date_Embauche' && typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>
-            <div *ngIf="col.field != 'Dat_Nai' && col.field !='Date_Embauche' && typeof(declaration[col.field])=='number'" class="text-right">{{declaration[col.field] }}</div>
+            <div *ngIf="col.field=='Civilite'&&civilites[declaration[col.field]-1]" class="text-center"> {{civilites[declaration[col.field]-1].name }}</div>
+            <div *ngIf="col.field=='Situ_Fam' && situations[declaration[col.field]-1]" class="text-center">{{situations[declaration[col.field]-1].name }}</div>
+            <div *ngIf="col.field!='Civilite' && col.field!='Situ_Fam' && col.field == 'Dat_Nai' ||col.field =='Date_Embauche'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
+            <div *ngIf="col.field!='Civilite' && col.field!='Situ_Fam' && col.field != 'Dat_Nai' && col.field !='Date_Embauche' && typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>
+            <div *ngIf="col.field!='Civilite' && col.field!='Situ_Fam' && col.field != 'Dat_Nai' && col.field !='Date_Embauche' && typeof(declaration[col.field])=='number'" class="text-right">{{declaration[col.field] }}</div>
           </td>
           <td class="text-center">
-            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID[0])" icon="pi pi-eye" pTooltip="{{'global.consulter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
-            <button pButton pRipple type="button" (click)="edit(declaration.ID[0])" icon="pi pi-pencil" pTooltip="{{'global.editer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
-            <button pButton pRipple type="button" (click)="delete(declaration.ID[0])" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
+            <button pButton pRipple type="button" (click)="consultDeclaration(declaration.ID)" icon="pi pi-eye" pTooltip="{{'global.consulter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
+            <button pButton pRipple type="button" (click)="edit(declaration.ID)" icon="pi pi-pencil" pTooltip="{{'global.editer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
+            <button pButton pRipple type="button" (click)="delete(declaration.ID)" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
           </td>
         </tr>
       </ng-template>
@@ -198,8 +201,16 @@
       <p-tabPanel header="{{'mainOeuvre.fonction'|translate}}">
                 <div class="col-md-12" >   
                   <label for="float-input" cols="100" >{{'mainOeuvre.fonction'|translate}}  </label>
-                  <input type="text" pInputText style="width:100%;" name="fonction" [(ngModel)]="ouvrier.fonction"  />                     
+                  <button pButton pRipple (click)="showModalDialog4()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+                  <p-dropdown [options]="fonctions" name="fonction" [(ngModel)]="ouvrier.fonction" placeholder="{{'mainOeuvre.fonction'|translate}}..." [style]="{'width':'100%'}" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                 
                 </div>
+                <p-dialog header="{{'mainOeuvre.fonction'|translate}}" [(visible)]="displayModal4" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+                [draggable]="false" [resizable]="false">
+                <input  type="text" pInputText style="width:100%;" [(ngModel)]="fonction"/>                     
+                    <ng-template pTemplate="footer">
+                    <p-button icon="pi pi-check" (click)="addFonction()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+                    </ng-template>
+              </p-dialog>
                 <div class="col-md-12 m-2" >
                   <p-checkbox [(ngModel)]="ouvrier.caporal" name="caporal" binary="true" inputId="binary"></p-checkbox>   
                   <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;" >{{'mainOeuvre.caporal'|translate}}</label>
@@ -323,7 +334,7 @@
         <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.unitePaiement'|translate}}  </label>
           <div class="p-field-radiobutton mb-2" *ngFor="let unite of 'mainOeuvre.unitesPaiement'|translate">
-              <p-radioButton name="unite{{unite.code}}" [(ngModel)]="ouvrier.unitePaiement" value="{{unite.name}}" [(ngModel)]="city" inputId="unite{{unite.code}}"></p-radioButton>
+              <p-radioButton name="unite{{unite.code}}" [(ngModel)]="ouvrier.unitePaiement" value="{{unite.code}}" [(ngModel)]="city" inputId="unite{{unite.code}}"></p-radioButton>
               <label for="unite{{unite.code}}" style="margin-bottom:1px;margin-left:2px;margin-right:2px;">{{unite.name}}</label>
           </div>
         </div>
@@ -337,22 +348,15 @@
         <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.modePaiement'|translate}}  </label>
           <div class="p-field-radiobutton mb-2" *ngFor="let type of 'mainOeuvre.methodePaie'|translate">
-            <p-radioButton name="city{{type.code}}" value="{{type.name}}" [(ngModel)]="ouvrier.modePaiement" inputId="{{type.code}}"></p-radioButton>
+            <p-radioButton name="city{{type.code}}" value="{{type.code}}" [(ngModel)]="ouvrier.modePaiement" inputId="{{type.code}}"></p-radioButton>
             <label for="city1{{type.code}}" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{type.name}}</label>
         </div>   
         </div>
         <div class="col-md-12 mb-3" >
           <label for="float-input" cols="100" >{{'mainOeuvre.banque'|translate}}  </label>
-          <button pButton pRipple (click)="showModalDialog4()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
           <p-dropdown name="banques" [options]="banques"  [style]="{'width':'100%'}" placeholder="{{'mainOeuvre.banque'|translate}}..." [(ngModel)]="ouvrier.banque" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                 
         </div>
-        <p-dialog header="{{'mainOeuvre.banque'|translate}}" [(visible)]="displayModal4" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
-            [draggable]="false" [resizable]="false">
-            <input  type="text" pInputText style="width:100%;" [(ngModel)]="banque"/>                     
-                <ng-template pTemplate="footer">
-                <p-button icon="pi pi-check" (click)="addBanque()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
-                </ng-template>
-        </p-dialog>
+   
         <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.rib'|translate}}  </label>
           <input type="text" name="rib" pInputText style="width:100%;" [(ngModel)]="ouvrier.rib"/>                     
@@ -364,12 +368,12 @@
           <div>
             <div class="p-field-checkbox mb-2" *ngFor="let s of societes">
               <div class="ml-3">
-                <p-checkbox name="group1" value="{{s.societe.name}}" [(ngModel)]="ouvrier.societes" (onChange)="checkSoc(s.societe.name)" inputId="ny"></p-checkbox>
+                <p-checkbox name="group1" value="{{s.societe.name}}" [(ngModel)]="checkedSocietes" (onChange)="checkSoc(s.societe.name)" inputId="ny"></p-checkbox>
                 <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{s.societe.name}}</label>
               </div>
               <div *ngIf="checkedSocietes.indexOf(s.societe.name)>=0" class="ml-5">
                   <div class="p-field-checkbox mb-2" *ngFor="let ferme of s.fermes">
-                    <p-checkbox name="group1" value="{{ferme.Nom}}" [(ngModel)]="ouvrier.fermes" inputId="ny"></p-checkbox>
+                    <p-checkbox name="group1" checked="true" value="{{ferme.IDFermes}}" [(ngModel)]="ouvrier.fermes" inputId="ny"></p-checkbox>
                     <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{ferme.Nom}}</label>
                   </div>
                 </div>

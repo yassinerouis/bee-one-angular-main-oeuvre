@@ -1,3 +1,7 @@
+import { NiveauScolaireService } from './../../services/niveau_scolaire/niveau-scolaire.service';
+import { QualificationPersonnelService } from './../../services/qualification_personnel/qualification-personnel.service';
+import { FonctionPersonnelService } from './../../services/fonction_personnel/fonction-personnel.service';
+import { CategoriePersonnelService } from './../../services/categorie_personnel/categorie-personnel.service';
 import { PrimesService } from './../../services/primes/primes.service';
 import { SocieteFermeService } from './../../services/societesFermes/societe-ferme.service';
 import { OuvriersService } from './../../services/ouvriers/ouvriers.service';
@@ -63,8 +67,7 @@ export class OuvriersComponent implements OnInit {
     primes:[{
       id:1,
       prime:null,
-      montant:null,
-      surplus:null
+      montant:null
     }],
     unitePaiement:null,
     representeEquipe:null,
@@ -97,7 +100,9 @@ export class OuvriersComponent implements OnInit {
 
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
     public lang:LanguageService,private ouvriersService:OuvriersService,private sfService:SocieteFermeService,
-    private primesService:PrimesService,private parametrageAMC:ParametrageAmcService) {
+    private primesService:PrimesService,private parametrageAMC:ParametrageAmcService,private categorieService:CategoriePersonnelService,
+    private fonctionService:FonctionPersonnelService,private qualificationService:QualificationPersonnelService,
+    private niveauService:NiveauScolaireService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
@@ -111,6 +116,23 @@ export class OuvriersComponent implements OnInit {
   save(){
     this.getSwalInteractions()
     console.log(this.ouvrier)
+    this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
+      if(res[0].message=="ajout reussi"){
+        Swal.fire(
+          this.swalInteractions.ajout.titre,
+          this.swalInteractions.ajout.description,
+          'success'
+        )
+        this.showForm()
+        this.ngOnInit()
+      }else{
+        Swal.fire({
+          icon: 'error',
+          title: this.swalInteractions.ajout.titreErr,
+          text:  this.swalInteractions.ajout.descriptionErr
+        })
+      }
+    },err=>console.log(err))
   }
 
 @Input() get selectedColumns(): any[] {
@@ -174,29 +196,55 @@ displayModal2 : boolean = false;
 displayModal3 : boolean = false;
 displayModal4 : boolean = false;
 
-niveaux=[{name:"niveau 1",code:"1"}]
-qualifications=[{name:"qualification 1",code:"1"}]
-categories=[{name:"categorie 1",code:"1"}]
-banques=[{name:"banque 1",code:"1"}]
+niveaux=[]
+qualifications=[]
+categories=[]
+banques=[]
+fonctions=[]
 niveau
 qualification
 categorie
-banque
+fonction
 addNiveau(){
-  this.niveaux.push({name:this.niveau,code:(this.niveaux.length+1).toString()})
-  this.displayModal1=false
+  this.niveauService.add({niveau:this.niveau}).subscribe(res=>{
+    if(this.niveaux.length>0){
+      this.niveaux.push({name:this.niveau,code:this.niveaux[this.niveaux.length-1].code+1})
+      this.ouvrier.niveauScolaire={name:this.niveau,code:this.niveaux[this.niveaux.length-1].code}
+      console.log(this.ouvrier.niveauScolaire)
+    }else{
+      this.niveaux.push({name:this.niveau,code:1})
+      this.ouvrier.niveauScolaire={name:this.niveau,code:1}
+    }
+    this.displayModal1=false
+  })
 }
 addQualification(){
-  this.qualifications.push({name:this.qualification,code:(this.qualifications.length+1).toString()})
-  this.displayModal2=false
+
+  this.qualificationService.add({qualification:this.qualification}).subscribe(res=>{
+    if(this.qualifications.length>0){
+      this.qualifications.push({name:this.qualification,code:this.qualifications[this.qualifications.length-1].code+1})
+      this.ouvrier.qualification={name:this.qualification,code:this.qualifications[this.qualifications.length-1].code}  
+    }else{
+      this.qualifications.push({name:this.qualification,code:1})
+      this.ouvrier.qualification={name:this.qualification,code:1}  
+    }
+      this.displayModal2=false
+  })
 }
 addCategorie(){
-  this.categories.push({name:this.categorie,code:(this.categories.length+1).toString()})
-  this.displayModal3=false
+  this.categorieService.add({categorie:this.categorie}).subscribe(res=>{
+    this.categories.push({name:this.categorie,code:this.categories[this.categories.length-1].code+1})
+    this.ouvrier.categorie={name:this.categorie,code:this.categories[this.categories.length-1].code}
+    this.displayModal3=false
+  })
+
 }
-addBanque(){
-  this.banques.push({name:this.banque,code:(this.banques.length+1).toString()})
-  this.displayModal4=false
+addFonction(){
+  this.fonctionService.add({fonction:this.fonction}).subscribe(res=>{
+    this.fonctions.push({name:this.fonction,code:this.fonctions[this.fonctions.length-1].code+1})
+    this.ouvrier.fonction={name:this.fonction,code:this.fonctions[this.fonctions.length-1].code}
+    this.displayModal4=false
+  })
 }
 showModalDialog1() {
   this.displayModal1 = true;
@@ -211,11 +259,19 @@ showModalDialog4() {
   this.displayModal4 = true;
 }
 ouvriers:any
-amc:any
+amc=[]
+civilites = []
+situations = []
   ngOnInit() {
+    console.log(this.ouvrier)
     this.ouvriersService.getOuvriers().subscribe(ouvriers=>{
       console.log(ouvriers)
       this.ouvriers=ouvriers
+      this.loading = false
+    })
+    this.translateService.get(['mainOeuvre']).subscribe(mo=>{
+      this.civilites = mo.mainOeuvre.civilites
+      this.situations = mo.mainOeuvre.situations
     })
     this.primesService.getPrimes().subscribe(primes=>{
       this.primes.push({label:'Traitée en surplus',value:-1})
@@ -243,113 +299,31 @@ amc:any
           this.societes.push({societe:societe,fermes:fermes})
         }) 
       }
-      console.log(this.societes)
-     /* for(var i=0;i<societes['length'];i++){
-       
-      }*/
     })
-    this.loading = false
+    this.niveauService.getAll().subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.niveaux[i]={name:res[i].Niveau_scolaire,code:res[i].IDNiveau_Scolaire}
+      }
+    })
+    this.qualificationService.getAll().subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.qualifications[i]={name:res[i].Qualification,code:res[i].IDQualification_Personnel}
+      }
+    })
+    this.categorieService.getAll().subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.categories[i]={name:res[i].Categorie,code:res[i].ID}
+      }
+    })
+    this.fonctionService.getAll().subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.fonctions[i]={name:res[i].Fonction_Personnel,code:res[i].ID}
+      }
+    })
     this.selectedOuvriers=[]
     console.log(this.swalInteractions)
     this.ids=[]
-      /*
-      AMC: null
-      Adr: ""
-      Banque: ""
-      Banque_Compte: ""
-      Banque_agance: ""
-      BarcodesId: "1454"
-      CIMR: ""
-      CIN: "KL14"
-      CNSS: "4196"
-      Caporale: false
-      CaporaleTransport: false
-      Categorie: 0
-      Chef_Cap: false
-      Chef_chantier: false
-      Chemain_CIN_PDF: null
-      Civilite: 1
-      Code_Pointeuse: "0"
-      Conge_droit_exerc_en_cours: 0
-      Conge_pris_Anne_en_cours: 0
-      Contractuel: false
-      Dat_Nai: null
-      Date_Embauche: "2020-10-27T00:00:00.000Z"
-      Date_cree: "2020-10-27T00:00:00.000Z"
-      Date_sortie: null
-      Droit_au_conge: 1.5
-      Droit_conge: 0
-      Droit_conge_date: null
-      Echelle: ""
-      Email: ""
-      En_exercice: true
-      Envoi_sync: false
-      Exonere_Cnss: false
-      Exonere_Impot: false
-      GSM: ""
-      Gardiennage: false
-      ID: 70513
-      IDChantiers: 0
-      IDFermes: 1
-      IDNiveau_Scolaire: 0
-      IDParametrage_AMC: 0
-      IDParametrage_CIMR: 0
-      IDQualification_Personnel: 0
-      IDpers_serv: 0
-      IDsociete: 0
-      Image_chaine: null
-      Jour_repos: null
-      Lieu_Nai: ""
-      Mat: "CHIMP14"
-      Mode_reglement: 1
-      Mutuelle: ""
-      NBEnft: null
-      NBRE: 0
-      NBRE_deduction: 0
-      N_identification: 1454
-      Nationnalite: "marocaine"
-      Niveau_Scol: 1
-      Nom: "AA"
-      Observation: ""
-      Passport: ""
-      Paye_par: 1
-      Pers_Ancte: 2
-      Pers_Cap: 0
-      Pers_Cap_transport: 0
-      Pers_Chef_cap: 0
-      Pers_Domaine: null
-      Pers_Fonction: 2
-      Pers_Local: false
-      Pers_Service: 0
-      Pers_chef_chantier: 0
-      Pers_photo: null
-      Photo_CIN1: null
-      Photo_CIN2: null
-      Prenom: "BB"
-      Prime_motivation: 0
-      Ref_machine: ""
-      Ref_mat: "00498"
-      Ref_utilisateur: ""
-      Retraite: ""
-      Salaire_Base: 76.7
-      Salaire_Horaire: 0
-      Salaire_Journalier: 0
-      Salaire_mensuel: 0
-      Sexe: "1"
-      Situ_Fam: 1
-      Solde_conge: 0
-      Solde_initial: 40
-      Taux_FP: 20
-      Taux_assurance: 0
-      Tectra: false
-      Tel: ""
-      Type_Paie: 1
-      Utilisateur: "superviseur"
-      Ville: null
-      formation_phyto: false
-      statut: "0"
-    */
-   
+    
     this.cols = [
       { field: 'Mat', header: 'matricule' },
       { field: 'Nom', header: 'nom' },
@@ -362,7 +336,7 @@ amc:any
       { field: 'Dat_Nai', header: 'dateNaissance' },
       { field: 'Situ_Fam', header: 'situationFamiliale' },
       { field: 'NBEnft', header: 'nombreEnfants' },
-      { field: 'Niveau_Scol', header: 'niveauScolaire' },
+      { field: 'Niveau_scolaire', header: 'niveauScolaire' },
       { field: 'attache', header: 'attache' },
       { field: 'Droit_conge', header: 'droitConge' },
       { field: 'Taux_assurance', header: 'tauxAssurance' },
@@ -373,8 +347,9 @@ amc:any
       { field: 'Type_Paie', header: 'modePaiement' },
       { field: 'Banque', header: 'banque' },
       { field: 'Banque_Compte', header: 'rib' },
-      { field: 'Pers_Fonction', header: 'fonction' },
-      { field: 'Categorie', header: 'categorie' },
+      { field: 'Fonction_Personnel', header: 'fonction' },
+      { field: 'Categ', header: 'categorie' },
+      { field: 'Qualification', header: 'qualification' },
       { field: 'Date_Embauche', header: 'dateEmbauche' },
       { field: 'CNSS', header: 'cnss' },
       { field: 'Pers_Ancte', header: 'anciennete' },
@@ -394,9 +369,9 @@ amc:any
       { field: 'Dat_Nai', header: 'dateNaissance' },
       { field: 'Situ_Fam', header: 'situationFamiliale' },
       { field: 'NBEnft', header: 'nombreEnfants' },
-      { field: 'Niveau_Scol', header: 'niveauScolaire' },
-      { field: 'attache', header: 'attache' },
-];
+      { field: 'Niveau_scolaire', header: 'niveauScolaire' },
+      { field: 'Fonction_Personnel', header: 'fonction' },
+    ];
   }
 
   setMyStyles() {
@@ -443,6 +418,7 @@ amc:any
   }
     //pour supprimer la déclaration de la récolte
   delete(id){
+    console.log(id)
     this.getSwalInteractions()
     Swal.fire({
       title: this.swalInteractions.suppression.titreVal,
@@ -455,7 +431,22 @@ amc:any
       confirmButtonText:  this.swalInteractions.ok
     }).then((result) => {
       if (result.value) {
-
+        this.ouvriersService.deleteOuvrier(id).subscribe(res=>{
+          if(res[0].message=="ajout reussi"){
+            Swal.fire(
+              this.swalInteractions.suppression.titreVal,
+              this.swalInteractions.modification.description,
+              'success'
+            )
+            this.ngOnInit()
+          }else{
+            Swal.fire({
+              icon: 'error',
+              title:  this.swalInteractions.suppression.titreErr,
+              text: this.swalInteractions.modification.descriptionErr,
+            })
+          }
+        })
       }
     })
   }
@@ -566,8 +557,7 @@ amc:any
       this.ouvrier.primes.push({
         id:this.ouvrier.primes.length+1,
         prime:null,
-        montant:null,
-        surplus:null
+        montant:null
       })
     }
     else{
@@ -586,8 +576,7 @@ amc:any
       this.ouvrier.primes[0]={
         id:this.ouvrier.primes.length,
         prime:null,
-        montant:null,
-        surplus:null
+        montant:null
       }
     }else{
       this.ouvrier.primes.splice(this.ouvrier.primes.indexOf(parcelle),1)
@@ -599,8 +588,7 @@ amc:any
       this.ouvrier.primes=[{
         id:1,
         prime:null,
-        montant:null,
-        surplus:null
+        montant:null
       }]
       this.forEdit = false
     this.form=!this.form
