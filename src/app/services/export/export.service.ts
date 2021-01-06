@@ -5,7 +5,6 @@ import 'jspdf-autotable'
 @Injectable({
   providedIn: 'root'
 })
-
 export class ExportService {
   constructor(){
   }
@@ -19,14 +18,19 @@ export class ExportService {
     doc.autoTable({
         body:this.table,
         columns:columns,
+        styles:{cellWidth:"10px",fontSize:4},
+        tableWidth:'wrap'
     })
     doc.save(name)
   }
   printPdf(columns){
   var doc:any = new jsPDF();
+  doc.setFontSize(1);
   doc.autoTable({
-  body:this.table,
-  columns: columns
+    body:this.table,
+    columns: columns,
+    styles:{cellWidth:"10px",fontSize:4},
+    tableWidth:'wrap'
 })
 doc.autoPrint();
 //This is a key for printing

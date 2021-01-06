@@ -10,7 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ɵConsole } from '@angular/core';
 import { MessageService } from "primeng/api";
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
@@ -18,6 +18,7 @@ import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
@@ -33,6 +34,7 @@ export class OuvriersComponent implements OnInit {
 
   //declaration des variables 
   ouvrier = {
+    id:null,
     matricule:null,
     codeBarre:null,
     civilite:null,
@@ -116,7 +118,7 @@ export class OuvriersComponent implements OnInit {
   save(){
     this.getSwalInteractions()
     console.log(this.ouvrier)
-    this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
+   /* this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
       if(res[0].message=="ajout reussi"){
         Swal.fire(
           this.swalInteractions.ajout.titre,
@@ -132,7 +134,7 @@ export class OuvriersComponent implements OnInit {
           text:  this.swalInteractions.ajout.descriptionErr
         })
       }
-    },err=>console.log(err))
+    },err=>console.log(err))*/
   }
 
 @Input() get selectedColumns(): any[] {
@@ -149,18 +151,16 @@ typeof(x){
   return typeof(x);
 }
 
-transformDate(declarations){
-  let declarationsWithTransformedDate = declarations
+transformDate(ouvriers){
+  let ouvriersWithTransformedDate = ouvriers
   if(this.transform){
-    declarationsWithTransformedDate.forEach(element => {
-      console.log(element.DateRecolte)
-      
-      element.DateRecolte = this.datepipe.transform(element.DateRecolte, 'dd/MM/yyyy')
-      console.log(element.DateRecolte)
+    ouvriers.forEach(element => {      
+      element.Dat_Nai = this.datepipe.transform(element.Dat_Nai, 'dd/MM/yyyy')
+      element.Date_Embauche = this.datepipe.transform(element.Date_Embauche, 'dd/MM/yyyy')
     });
     this.transform=false
   }
-  return declarationsWithTransformedDate
+  return ouvriersWithTransformedDate;
 }
 transformDateDetails(declarations){
   let declarationsWithTransformedDate = declarations
@@ -182,9 +182,16 @@ names = [];
 obs
 city="Espèce"
 checkSoc(s){
-  console.log(s)
-  console.log(this.checkedSocietes)
-  console.log(this.checkedSocietes.indexOf(s))
+  this.sfService.getFermesSociete(s).subscribe(fermes=>{
+    for(var i=0;i<fermes['length'];i++){
+      if(this.ouvrier.fermes.indexOf(fermes[i].IDFermes.toString())==-1){
+        this.ouvrier.fermes.push(fermes[i].IDFermes.toString())
+      }
+    }
+    setTimeout (() => {
+   }, 1000);
+  }) 
+console.log(this.ouvrier.fermes)
 }
 checkedSocietes = []
 societes = []
@@ -289,10 +296,11 @@ situations = []
     })
     this.parametrageAMC.getAll().subscribe(amc=>{
       for(var i=0;i<amc['length'];i++){
-        this.amc[i]={name:amc[i].Libelle,code:amc[i].IDParametrage_AMC}
+        this.amc[i]={label:amc[i].Libelle,value:amc[i].IDParametrage_AMC}
       }
     })
     this.sfService.getSocietes().subscribe(societes=>{
+      console.log(societes)
       for(var i=0;i<societes['length'];i++){
         let societe={id:societes[i].ID,name:societes[i].Rais_Social}
         this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
@@ -302,22 +310,22 @@ situations = []
     })
     this.niveauService.getAll().subscribe(res=>{
       for(var i=0;i<res['length'];i++){
-        this.niveaux[i]={name:res[i].Niveau_scolaire,code:res[i].IDNiveau_Scolaire}
+        this.niveaux[i]={label:res[i].Niveau_scolaire,value:res[i].IDNiveau_Scolaire}
       }
     })
     this.qualificationService.getAll().subscribe(res=>{
       for(var i=0;i<res['length'];i++){
-        this.qualifications[i]={name:res[i].Qualification,code:res[i].IDQualification_Personnel}
+        this.qualifications[i]={label:res[i].Qualification,value:res[i].IDQualification_Personnel}
       }
     })
     this.categorieService.getAll().subscribe(res=>{
       for(var i=0;i<res['length'];i++){
-        this.categories[i]={name:res[i].Categorie,code:res[i].ID}
+        this.categories[i]={label:res[i].Categorie,value:res[i].ID}
       }
     })
     this.fonctionService.getAll().subscribe(res=>{
       for(var i=0;i<res['length'];i++){
-        this.fonctions[i]={name:res[i].Fonction_Personnel,code:res[i].ID}
+        this.fonctions[i]={label:res[i].Fonction_Personnel,value:res[i].ID}
       }
     })
     this.selectedOuvriers=[]
@@ -332,7 +340,7 @@ situations = []
       { field: 'Tel', header: 'tel' },
       { field: 'Email', header: 'email' },
       { field: 'Civilite', header: 'civilite' },
-      { field: 'adr', header: 'Adresse' },
+      { field: 'Adr', header: 'Adresse' },
       { field: 'Dat_Nai', header: 'dateNaissance' },
       { field: 'Situ_Fam', header: 'situationFamiliale' },
       { field: 'NBEnft', header: 'nombreEnfants' },
@@ -365,7 +373,7 @@ situations = []
       { field: 'Tel', header: 'tel' },
       { field: 'Email', header: 'email' },
       { field: 'Civilite', header: 'civilite' },
-      { field: 'adr', header: 'adresse' },
+      { field: 'Adr', header: 'adresse' },
       { field: 'Dat_Nai', header: 'dateNaissance' },
       { field: 'Situ_Fam', header: 'situationFamiliale' },
       { field: 'NBEnft', header: 'nombreEnfants' },
@@ -391,13 +399,80 @@ situations = []
     this.ouvrier.primes = []
     this.id = id
     this.forEdit = true
-
   }
   //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
+    this.ouvrier.id=id
+   this.ouvriersService.getPrimes(id).subscribe(primes=>{
+    for(var i=0;i<primes['length'];i++){
+      this.ouvrier.primes[i]={
+        id:i+1,
+        prime:primes[i].IDPrime,
+        montant:primes[i].Montant
+      }
+    }
+    console.log(this.ouvrier.primes)
+  })
+    this.ouvriersService.getOuvrier(id).subscribe(ouvrier=>{
+        this.ouvrier.matricule=ouvrier[0].Mat,
+        this.ouvrier.codeBarre=ouvrier[0].BarcodesId,
+        this.ouvrier.civilite=ouvrier[0].Civilite,
+        this.ouvrier.nom=ouvrier[0].Nom,
+        this.ouvrier.prenom=ouvrier[0].Prenom,
+        this.ouvrier.cin=ouvrier[0].CIN,
+        this.ouvrier.dateNaissance=new Date(ouvrier[0].Dat_Nai),
+        this.ouvrier.situationFamiliale=ouvrier[0].Situ_Fam,
+        this.ouvrier.nombreEnfants=ouvrier[0].NBEnft,
+        this.ouvrier.addresse=ouvrier[0].Adr,
+        this.ouvrier.tel=ouvrier[0].Tel,
+        this.ouvrier.email=ouvrier[0].Email,
+        this.ouvrier.niveauScolaire=ouvrier[0].Niveau_Scol,
+        this.ouvrier.qualification=ouvrier[0].IDQualification_Personnel,
+        this.ouvrier.fonction=ouvrier[0].Pers_Fonction,
+        this.ouvrier.caporal=ouvrier[0].Caporale,
+        this.ouvrier.attache=ouvrier[0].Pers_Cap,
+        this.ouvrier.categorie=ouvrier[0].Categorie,
+        this.ouvrier.dateEmbauche=new Date(ouvrier[0].Date_Embauche),
+        this.ouvrier.cnss=ouvrier[0].CNSS,
+        this.ouvrier.anciennete=ouvrier[0].Pers_Ancte,
+        this.ouvrier.droitConge=ouvrier[0].Droit_conge,
+        this.ouvrier.tauxAssurance=ouvrier[0].Taux_assurance,
+        this.ouvrier.matriculeAMC=ouvrier[0].AMC,
+        this.ouvrier.optionAMC=ouvrier[0].IDParametrage_AMC,
+        this.ouvrier.exercice=ouvrier[0].En_exercice,
+        this.ouvrier.contractuel=ouvrier[0].Contractuel,
+        this.ouvrier.formationPhyto=ouvrier[0].formation_phyto,
+        this.ouvrier.observation=ouvrier[0].Observation,
+        this.ouvrier.salaireBase=ouvrier[0].Salaire_Base,
+        this.ouvrier.unitePaiement=ouvrier[0].Paye_par,
+        this.ouvrier.representeEquipe=ouvrier[0].NBRE?true:false,
+        this.ouvrier.representeNombre=ouvrier[0].NBRE,
+        this.ouvrier.modePaiement=ouvrier[0].Mode_reglement,
+        this.ouvrier.rib=ouvrier[0].Banque_Compte
+    })
+ /*   this.sfService.getSocietes().subscribe(societes=>{
+      console.log(societes)
+      for(var i=0;i<societes['length'];i++){
+        let societe={id:societes[i].ID,name:societes[i].Rais_Social}
+        this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
+          this.societes.push({societe:societe,fermes:fermes})
+        }) 
+      }
+    })*/
+    this.ouvriersService.getFermes(id).subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.ouvrier.fermes.push(res[i].IDFermes.toString())
+      }
+    })
+    this.ouvriersService.getSocietes(id).subscribe(res=>{
+      for(var i=0;i<res['length'];i++){
+        this.checkedSocietes.push(res[i].ID_societe.toString())
+      }
+      console.log(this.checkedSocietes)
+    })
+    this.showForm()
     this.id = id
     this.forEdit = true
-
   }
 
   //annuler l'action (ajouter ou modifier)
@@ -409,11 +484,25 @@ situations = []
 
   //pour modifier la déclaration de la récolte
   update(){
-    this.getSwalInteractions()
-    let declarationRecolte = {
-      id:this.id,
-      date_recolte:this.declaration.date_recolte,
-      observations:this.declaration.observations,
+    {
+      this.getSwalInteractions()
+      this.ouvriersService.updateOuvrier(this.ouvrier).subscribe(res=>{
+        if(res[0].message=="ajout reussi"){
+          Swal.fire(
+            this.swalInteractions.modification.titre,
+            this.swalInteractions.modification.description,
+            'success'
+          )
+          this.showForm()
+          this.ngOnInit()
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: this.swalInteractions.modification.titreErr,
+            text:  this.swalInteractions.modification.descriptionErr
+          })
+        }
+      },err=>console.log(err))
     }
   }
     //pour supprimer la déclaration de la récolte
@@ -457,16 +546,23 @@ situations = []
   // Début exportation des déclaration de la récolte
   exportPdf() {
     let columns=[
-      { header: 'Date de récolte', dataKey: 'DateRecolte'},
-      { header: 'Nombre de parcelles', dataKey: 'parcelles' },
-      { header: 'Observations', dataKey: 'Observations' },
-      { header: 'Récolte MO', dataKey: 'RecolteMO' },
-      { header: 'Récolte hors MO', dataKey: 'RecolteHorsMO' },
-      { header: 'Vente sur pieds', dataKey: 'VentePieds' },
-      { header: 'Quantité totale', dataKey: 'QteTotale' }
+      { dataKey: 'Mat', header: 'Matricule' },
+      { dataKey: 'Nom', header: 'Nom' },
+      { dataKey: 'Prenom', header: 'Prenom' },
+      { dataKey: 'CIN', header: 'CIN' },
+      { dataKey: 'CNSS', header: 'N CNSS' },
+      { dataKey: 'Tel', header: 'N téléphone' },
+      { dataKey: 'Email', header: 'Email' },
+      { dataKey: 'Civilite', header: 'Civilité' },
+      { dataKey: 'Adr', header: 'Addresse' },
+      { dataKey: 'Dat_Nai', header: 'Date de naissance' },
+      { dataKey: 'Situ_Fam', header: 'Situation familiale' },
+      { dataKey: 'NBEnft', header: 'Nombre d\'enfants' },
+      { dataKey: 'Niveau_scolaire', header: 'Niveau scolaire' },
+      { dataKey: 'Fonction_Personnel', header: 'Fonction' }
     ]
-    this.exportService.setTable(this.transformDate(this.declarations))
-    this.exportService.exportPdf(columns,'declarationsRecolte.pdf')
+    this.exportService.setTable(this.transformDate(this.ouvriers))
+    this.exportService.exportPdf(columns,'ouvriers.pdf')
   }
   printPdf(){
    /* let columns=[]
@@ -481,75 +577,74 @@ situations = []
        // columns.push( { header: this.translateService.translations.fr.rendement[element.header], dataKey: element.field})
       })
     }*/
-  let columns=[
-      { header: 'Date de récolte', dataKey: 'DateRecolte'},
-      { header: 'Nombre de parcelles', dataKey: 'parcelles' },
-      { header: 'Observations', dataKey: 'Observations' },
-      { header: 'Récolte MO', dataKey: 'RecolteMO' },
-      { header: 'Récolte hors MO', dataKey: 'RecolteHorsMO' },
-      { header: 'Vente sur pieds', dataKey: 'VentePieds' },
-      { header: 'Quantité totale', dataKey: 'QteTotale' }
+    let columns=[
+      { dataKey: 'Mat', header: 'Matricule' },
+      { dataKey: 'Nom', header: 'Nom' },
+      { dataKey: 'Prenom', header: 'Prénom' },
+      { dataKey: 'CIN', header: 'CIN' },
+      { dataKey: 'CNSS', header: 'N CNSS' },
+      { dataKey: 'Tel', header: 'N téléphone' },
+      { dataKey: 'Dat_Nai', header: 'Date de naissance' },
+      { dataKey: 'NBEnft', header: 'Nombre d\'enfants' },
+      { dataKey: 'Niveau_scolaire', header: 'Niveau scolaire' },
+      { dataKey: 'Fonction_Personnel', header: 'Fonction' }
     ]
-    this.exportService.setTable(this.transformDate(this.declarations))
+    this.exportService.setTable(this.transformDate(this.ouvriers))
     this.exportService.printPdf(columns)
   }
+  fields= [ 'Mat'  ,
+    'Nom', ,
+    'Prenom',
+    'CIN',
+    'Tel', 
+    'Email',
+    'Civilite', 
+    'Adr', 
+    'Dat_Nai', 
+    'Situ_Fam', 
+    'NBEnft', 
+    'Niveau_scolaire',
+    'attache',
+    'Droit_conge',
+    'Taux_assurance',
+    'AMC', 
+    'formation_phyto',
+    'Prime_motivation',
+    'Contractuel', 
+    'Type_Paie',
+    'Banque',
+    'Banque_Compte',
+    'Fonction_Personnel',
+    'Categ',
+    'Qualification', 
+    'Date_Embauche',
+    'CNSS',
+    'Pers_Ancte',
+    'En_exercice',
+    'Salaire_Base']
   exportExcel() {
     let table = []
-    for(var i=0;i<this.transformDate(this.declarations).length;i++){
+    for(var i=0;i<this.transformDate(this.ouvriers).length;i++){
       table[i]={
-        'Date de récolte': this.transformDate(this.declarations)[i].DateRecolte,
-        'Nombre de parcelles':this.transformDate(this.declarations)[i].parcelles,
-        'Observations':this.transformDate(this.declarations)[i].Observations,
-        'Récolte MO':this.transformDate(this.declarations)[i].RecolteMO,
-        'Récolte hors MO': this.transformDate(this.declarations)[i].RecolteHorsMO,
-        'Vente sur pieds': this.transformDate(this.declarations)[i].VentePieds,
-        'Quantité totale': this.transformDate(this.declarations)[i].QteTotale 
+        'Matricule': this.ouvriers[i].Mat,
+        'Nom':this.ouvriers[i].Nom,
+        'Prénom':this.ouvriers[i].Prenom,
+        'CIN':this.ouvriers[i].CIN,
+        'N CNSS':this.ouvriers[i].CNSS,
+        'N téléphone':this.ouvriers[i].Tel,
+        'Email': this.ouvriers[i].Email,
+        'Civilité': this.ouvriers[i].Civilite,
+        'Addresse':this.ouvriers[i].adr,
+        'Date de naissance':this.transformDate(this.ouvriers)[i].Dat_Nai,
+        'Situation familiale':this.ouvriers[i].Dat_Nai,
+        'Nombre d\'enfants': this.ouvriers[i].NBEnft,
+        'Niveau scolaire': this.ouvriers[i].Niveau_scolaire,
+        'Fonction': this.ouvriers[i].Fonction_Personnel,
       }
     }
     this.exportService.exportExcel('declarationsRecolte',table)
   }
-    // Début exportations du détail des déclaration de la récolte
-      exportDetailsPdf() {
-        let columns=[
-          { header: 'Date de récolte', dataKey: 'DateRecolte'},
-          { header: 'Parcelle', dataKey: 'Ref' },
-          { header: 'Type du produit', dataKey: 'designation' },
-          { header: 'Récolte MO', dataKey: 'RecolteMO' },
-          { header: 'Récolte hors MO', dataKey: 'RecolteHorsMO' },
-          { header: 'Vente sur pieds', dataKey: 'VentePieds' },
-          { header: 'Quantité totale', dataKey: 'QteTotale' }
-        ]
-        this.exportService.setTable(this.transformDateDetails(this.detailsDeclarations))
-        this.exportService.exportPdf(columns,'detailsDeclarationsRecolte.pdf')
-      }
-      printDetailsPdf(){
-        let columns=[
-          { header: 'Date de récolte', dataKey: 'DateRecolte'},
-          { header: 'Parcelle', dataKey: 'Ref' },
-          { header: 'Type du produit', dataKey: 'designation' },
-          { header: 'Récolte MO', dataKey: 'RecolteMO' },
-          { header: 'Récolte hors MO', dataKey: 'RecolteHorsMO' },
-          { header: 'Vente sur pieds', dataKey: 'VentePieds' },
-          { header: 'Quantité totale', dataKey: 'QteTotale' }
-        ]
-        this.exportService.setTable(this.transformDateDetails(this.detailsDeclarations))
-        this.exportService.printPdf(columns)
-      }
-      exportDetailsExcel() {
-        let table = []
-        for(var i=0;i<this.transformDateDetails(this.detailsDeclarations).length;i++){
-          table[i]={
-            'Date de récolte': this.transformDateDetails(this.detailsDeclarations)[i].DateRecolte,
-            'Parcelle': this.transformDateDetails(this.detailsDeclarations)[i].Ref ,
-            'Type du produit':this.transformDateDetails(this.detailsDeclarations)[i].designation,
-            'Récolte MO':this.transformDateDetails(this.detailsDeclarations)[i].RecolteMO,
-            'Récolte hors MO': this.transformDateDetails(this.detailsDeclarations)[i].RecolteHorsMO,
-            'Vente sur pieds': this.transformDateDetails(this.detailsDeclarations)[i].VentePieds,
-            'Quantité totale': this.transformDateDetails(this.detailsDeclarations)[i].QteTotale 
-          }
-        }
-        this.exportService.exportExcel('detailsDeclarationsRecolte',table)
-      }
+    
   //Ajouter un nouveau élément à la table si l'élément courant est valide
   addItem(){
     this.getSwalInteractions()
@@ -598,7 +693,8 @@ situations = []
     this.getSwalInteractions()
     let ids = []
     this.selectedOuvriers.forEach(element=>{
-      ids.push(element.ID[0])
+      console.log(element)
+      ids.push(element.ID)
     })
     console.log(ids)
     if(ids.length==1){
@@ -615,7 +711,23 @@ situations = []
         confirmButtonText: this.swalInteractions.ok
       }).then((result) => {
         if (result.value) {
-
+          this.ouvriersService.deleteOuvriers(ids).subscribe(res=>{
+            if(res[0].message=="ajout reussi"){
+              Swal.fire(
+                this.swalInteractions.suppressionPlusieurs.titre,
+                this.swalInteractions.suppressionPlusieurs.description,
+                'success'
+              )
+              this.ngOnInit()
+            }else{
+              Swal.fire({
+                icon: 'error',
+                title: this.swalInteractions.suppressionPlusieurs.titreErr,
+                text:   this.swalInteractions.suppressionPlusieurs.descriptionErr
+              }
+              )
+            }
+          })
         }
       })
     }
@@ -638,27 +750,22 @@ situations = []
     this.filterOptions()
     this.data = []
     this.ngOnInit()    
-  
   }
 
   selectedMonth=null
-
   onChangeMonth(e){
     this.translateService.get(['primeng']).subscribe(res=>{
       this.selectedMonth=res.primeng.monthNames.indexOf(e.value)+1
       this.filterOptions()
     })
-
   
   }
 
   selectedYear=null
 
   onChangeYear(e){
-    
     this.selectedYear=e.value.name
     this.filterOptions()
-
   }
 
   filtre={parcelle:null,debut:null,fin:null}
