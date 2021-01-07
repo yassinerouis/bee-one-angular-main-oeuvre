@@ -27,6 +27,7 @@ import {CookieService} from 'ngx-cookie-service';
 import {CheckboxModule} from 'primeng/checkbox';
 import {TabViewModule} from 'primeng/tabview';
 import {RadioButtonModule} from 'primeng/radiobutton';
+import { MessageService } from 'primeng/api';
 
 const routes: Routes = [
   { path: 'ouvriers', component: OuvriersComponent }
@@ -61,7 +62,7 @@ const routes: Routes = [
     CheckboxModule,
     MessagesModule,
   ],
-  providers: [DatePipe,CookieService],
+  providers: [DatePipe,CookieService,MessageService],
   exports:[TranslateModule]
 })
 export class MainOeuvreModule { }

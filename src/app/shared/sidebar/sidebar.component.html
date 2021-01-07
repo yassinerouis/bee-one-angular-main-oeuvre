@@ -1,11 +1,6 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav">
-    <li class="nav-item" [ngClass]="{ 'active': true }">
-      <a class="nav-link">
-        <span class="menu-title vsm-header">    {{ 'mainOeuvre.name' | translate }}
-        </span>
-      </a>
-    </li>
+
     <li class="nav-item" [ngClass]="{'active' : link11.isActive || link12.isActive }">
       <a class="nav-link" (click)="link1 = !link1" [attr.aria-expanded]="link1" aria-controls="ui-basic">
         <span class="menu-title">{{ 'mainOeuvre.dossierPersonnel.name' | translate }}</span>

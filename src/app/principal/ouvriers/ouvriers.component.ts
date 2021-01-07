@@ -19,6 +19,7 @@ import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
 import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
@@ -61,7 +62,7 @@ export class OuvriersComponent implements OnInit {
     tauxAssurance:null,
     matriculeAMC:null,
     optionAMC:null,
-    exercice:null,
+    exercice:true,
     contractuel:null,
     formationPhyto:null,
     observation:null,
@@ -71,16 +72,15 @@ export class OuvriersComponent implements OnInit {
       prime:null,
       montant:null
     }],
-    unitePaiement:null,
+    unitePaiement:"1",
     representeEquipe:null,
     representeNombre:null,
-    modePaiement:null,
+    modePaiement:"1",
     banque:null,
     rib:null,
     societes:[],
     fermes:[]
   }
-
   consult = false
   forEdit = false
   statuses: any[];
@@ -99,7 +99,6 @@ export class OuvriersComponent implements OnInit {
   transform = true
   transformDetails = true
   selectedOuvriers=[]
-
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
     public lang:LanguageService,private ouvriersService:OuvriersService,private sfService:SocieteFermeService,
     private primesService:PrimesService,private parametrageAMC:ParametrageAmcService,private categorieService:CategoriePersonnelService,
@@ -115,10 +114,61 @@ export class OuvriersComponent implements OnInit {
     })
   }
 
+  vider(){
+    this.ouvrier = {
+      id:null,
+      matricule:null,
+      codeBarre:null,
+      civilite:null,
+      nom:null,
+      prenom:null,
+      cin:null,
+      dateNaissance:null,
+      situationFamiliale:null,
+      nombreEnfants:null,
+      addresse:null,
+      tel:null,
+      email:null,
+      niveauScolaire:null,
+      qualification:null,
+      fonction:null,
+      caporal:null,
+      attache:null,
+      categorie:null,
+      dateEmbauche:null,
+      cnss:null,
+      anciennete:null,
+      droitConge:1.5,
+      congeInitial:null,
+      tauxAssurance:null,
+      matriculeAMC:null,
+      optionAMC:null,
+      exercice:true,
+      contractuel:null,
+      formationPhyto:null,
+      observation:null,
+      salaireBase:null,
+      primes:[{
+        id:1,
+        prime:null,
+        montant:null
+      }],
+      unitePaiement:"1",
+      representeEquipe:null,
+      representeNombre:null,
+      modePaiement:"1",
+      banque:null,
+      rib:null,
+      societes:[],
+      fermes:[]
+    }
+  }
   save(){
     this.getSwalInteractions()
     console.log(this.ouvrier)
-   /* this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
+    /*
+    this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
+      console.log(res)
       if(res[0].message=="ajout reussi"){
         Swal.fire(
           this.swalInteractions.ajout.titre,
@@ -181,17 +231,27 @@ swalInteractions:any
 names = [];
 obs
 city="Espèce"
-checkSoc(s){
-  this.sfService.getFermesSociete(s).subscribe(fermes=>{
-    for(var i=0;i<fermes['length'];i++){
-      if(this.ouvrier.fermes.indexOf(fermes[i].IDFermes.toString())==-1){
-        this.ouvrier.fermes.push(fermes[i].IDFermes.toString())
+checkSoc(e,s){
+  if(e.checked){
+    this.sfService.getFermesSociete(s).subscribe(fermes=>{
+      this.societes.forEach(element => {
+        if(element.societe.id==s){
+          element.fermes=fermes
+        }
+      });
+      for(var i=0;i<fermes['length'];i++){
+        if(this.ouvrier.fermes.indexOf(fermes[i].IDFermes.toString())==-1){
+          this.ouvrier.fermes.push(fermes[i].IDFermes.toString())
+        }
       }
-    }
-    setTimeout (() => {
-   }, 1000);
-  }) 
-console.log(this.ouvrier.fermes)
+    }) 
+  }else{
+    this.sfService.getFermesSociete(s).subscribe(fermes=>{
+      for(var i=0;i<fermes['length'];i++){
+        this.ouvrier.fermes.splice((this.ouvrier.fermes.indexOf(fermes[i].IDFermes.toString())),1)
+      }
+    })
+  }
 }
 checkedSocietes = []
 societes = []
@@ -214,13 +274,22 @@ categorie
 fonction
 addNiveau(){
   this.niveauService.add({niveau:this.niveau}).subscribe(res=>{
-    if(this.niveaux.length>0){
-      this.niveaux.push({name:this.niveau,code:this.niveaux[this.niveaux.length-1].code+1})
-      this.ouvrier.niveauScolaire={name:this.niveau,code:this.niveaux[this.niveaux.length-1].code}
-      console.log(this.ouvrier.niveauScolaire)
-    }else{
-      this.niveaux.push({name:this.niveau,code:1})
-      this.ouvrier.niveauScolaire={name:this.niveau,code:1}
+    if(res[0].IDNiveau_Scolaire){
+      Swal.fire({
+        icon: 'error',
+        title: 'Existe dèjà',
+        text:  'L\'element existe dèjà'
+      })
+    }
+    else{
+      if(this.niveaux.length>0){
+        this.niveaux.push({label:this.niveau,value:this.niveaux[this.niveaux.length-1].value+1})
+        this.ouvrier.niveauScolaire={label:this.niveau,value:this.niveaux[this.niveaux.length-1].value}
+        console.log(this.ouvrier.niveauScolaire)
+      }else{
+        this.niveaux.push({label:this.niveau,value:1})
+        this.ouvrier.niveauScolaire={label:this.niveau,value:1}
+      }
     }
     this.displayModal1=false
   })
@@ -228,28 +297,56 @@ addNiveau(){
 addQualification(){
 
   this.qualificationService.add({qualification:this.qualification}).subscribe(res=>{
-    if(this.qualifications.length>0){
-      this.qualifications.push({name:this.qualification,code:this.qualifications[this.qualifications.length-1].code+1})
-      this.ouvrier.qualification={name:this.qualification,code:this.qualifications[this.qualifications.length-1].code}  
-    }else{
-      this.qualifications.push({name:this.qualification,code:1})
-      this.ouvrier.qualification={name:this.qualification,code:1}  
+    if(res[0].IDQualification_Personnel){
+      Swal.fire({
+        icon: 'error',
+        title: 'Existe dèjà',
+        text:  'L\'element existe dèjà'
+      })
     }
-      this.displayModal2=false
+    else{
+    if(this.qualifications.length>0){
+      this.qualifications.push({label:this.qualification,value:this.qualifications[this.qualifications.length-1].value+1})
+      this.ouvrier.qualification={label:this.qualification,value:this.qualifications[this.qualifications.length-1].value}  
+    }else{
+      this.qualifications.push({label:this.qualification,value:1})
+      this.ouvrier.qualification={label:this.qualification,value:1}  
+    }
+  }
+    this.displayModal2=false
   })
 }
 addCategorie(){
   this.categorieService.add({categorie:this.categorie}).subscribe(res=>{
-    this.categories.push({name:this.categorie,code:this.categories[this.categories.length-1].code+1})
-    this.ouvrier.categorie={name:this.categorie,code:this.categories[this.categories.length-1].code}
+    if(res[0].ID){
+      Swal.fire({
+        icon: 'error',
+        title: 'Existe dèjà',
+        text:  'L\'element existe dèjà'
+      })
+    }
+    else{
+    this.categories.push({label:this.categorie,value:this.categories[this.categories.length-1].value+1})
+    this.ouvrier.categorie={label:this.categorie,value:this.categories[this.categories.length-1].value}
+    }
     this.displayModal3=false
   })
 
 }
 addFonction(){
+  
   this.fonctionService.add({fonction:this.fonction}).subscribe(res=>{
-    this.fonctions.push({name:this.fonction,code:this.fonctions[this.fonctions.length-1].code+1})
-    this.ouvrier.fonction={name:this.fonction,code:this.fonctions[this.fonctions.length-1].code}
+    if(res[0].ID){
+      Swal.fire({
+        icon: 'error',
+        title: 'Existe dèjà',
+        text:  'L\'element existe dèjà'
+      })
+    }
+    else{
+    this.fonctions.push({label:this.fonction,value:this.fonctions[this.fonctions.length-1].value+1})
+    this.ouvrier.fonction={label:this.fonction,value:this.fonctions[this.fonctions.length-1].value}
+    }
     this.displayModal4=false
   })
 }
@@ -270,9 +367,54 @@ amc=[]
 civilites = []
 situations = []
   ngOnInit() {
-    console.log(this.ouvrier)
+    this.ouvrier = {
+      id:null,
+      matricule:null,
+      codeBarre:null,
+      civilite:null,
+      nom:null,
+      prenom:null,
+      cin:null,
+      dateNaissance:null,
+      situationFamiliale:null,
+      nombreEnfants:null,
+      addresse:null,
+      tel:null,
+      email:null,
+      niveauScolaire:null,
+      qualification:null,
+      fonction:null,
+      caporal:null,
+      attache:null,
+      categorie:null,
+      dateEmbauche:null,
+      cnss:null,
+      anciennete:null,
+      droitConge:1.5,
+      congeInitial:null,
+      tauxAssurance:null,
+      matriculeAMC:null,
+      optionAMC:null,
+      exercice:true,
+      contractuel:null,
+      formationPhyto:null,
+      observation:null,
+      salaireBase:null,
+      primes:[{
+        id:1,
+        prime:null,
+        montant:null
+      }],
+      unitePaiement:"1",
+      representeEquipe:null,
+      representeNombre:null,
+      modePaiement:"1",
+      banque:null,
+      rib:null,
+      societes:[],
+      fermes:[]
+    }
     this.ouvriersService.getOuvriers().subscribe(ouvriers=>{
-      console.log(ouvriers)
       this.ouvriers=ouvriers
       this.loading = false
     })
@@ -393,16 +535,13 @@ situations = []
     this._selectedColumns=e.value
     console.log(this.selectedColumns)
   }
-  
-  consultDeclaration(id){
-    this.declarationForConsult.pop()
-    this.ouvrier.primes = []
-    this.id = id
-    this.forEdit = true
+  consulter(id){
+    this.edit(id)
+    this.consult=true
   }
   //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
-    this.ouvrier.id=id
+  this.ouvrier.id=id
    this.ouvriersService.getPrimes(id).subscribe(primes=>{
     for(var i=0;i<primes['length'];i++){
       this.ouvrier.primes[i]={
@@ -411,7 +550,6 @@ situations = []
         montant:primes[i].Montant
       }
     }
-    console.log(this.ouvrier.primes)
   })
     this.ouvriersService.getOuvrier(id).subscribe(ouvrier=>{
         this.ouvrier.matricule=ouvrier[0].Mat,
@@ -450,19 +588,13 @@ situations = []
         this.ouvrier.modePaiement=ouvrier[0].Mode_reglement,
         this.ouvrier.rib=ouvrier[0].Banque_Compte
     })
- /*   this.sfService.getSocietes().subscribe(societes=>{
-      console.log(societes)
-      for(var i=0;i<societes['length'];i++){
-        let societe={id:societes[i].ID,name:societes[i].Rais_Social}
-        this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
-          this.societes.push({societe:societe,fermes:fermes})
-        }) 
-      }
-    })*/
+    this.checkedSocietes=[]
+    this.ouvrier.fermes=[]
     this.ouvriersService.getFermes(id).subscribe(res=>{
       for(var i=0;i<res['length'];i++){
         this.ouvrier.fermes.push(res[i].IDFermes.toString())
       }
+      console.log(this.ouvrier.fermes)
     })
     this.ouvriersService.getSocietes(id).subscribe(res=>{
       for(var i=0;i<res['length'];i++){
@@ -470,21 +602,22 @@ situations = []
       }
       console.log(this.checkedSocietes)
     })
-    this.showForm()
-    this.id = id
-    this.forEdit = true
+    setTimeout(()=>{                           //<<<---using ()=> syntax
+      this.showForm()
+      this.id = id
+      this.forEdit = true
+    }, 1000);
   }
 
   //annuler l'action (ajouter ou modifier)
-  cancel(){
-    this.ouvrier.primes = []
+  annuler(){
+    this.vider()
     this.showForm()
     this.forEdit = false
   }
-
   //pour modifier la déclaration de la récolte
   update(){
-    {
+    console.log(this.ouvrier)
       this.getSwalInteractions()
       this.ouvriersService.updateOuvrier(this.ouvrier).subscribe(res=>{
         if(res[0].message=="ajout reussi"){
@@ -502,8 +635,7 @@ situations = []
             text:  this.swalInteractions.modification.descriptionErr
           })
         }
-      },err=>console.log(err))
-    }
+      },err=>console.log(err)) 
   }
     //pour supprimer la déclaration de la récolte
   delete(id){
@@ -686,7 +818,9 @@ situations = []
         montant:null
       }]
       this.forEdit = false
-    this.form=!this.form
+      this.consult=false
+      this.form=!this.form
+      this.checkedSocietes=[]
   }
   //supprimer plusieurs declarations à la fois
   deleteselectedOuvriers(){

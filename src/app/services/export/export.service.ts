@@ -24,17 +24,17 @@ export class ExportService {
     doc.save(name)
   }
   printPdf(columns){
-  var doc:any = new jsPDF();
-  doc.setFontSize(1);
-  doc.autoTable({
-    body:this.table,
-    columns: columns,
-    styles:{cellWidth:"10px",fontSize:4},
-    tableWidth:'wrap'
-})
-doc.autoPrint();
-//This is a key for printing
-doc.output('dataurlnewwindow');
+    var doc:any = new jsPDF();
+    doc.setFontSize(1);
+    doc.autoTable({
+      body:this.table,
+      columns: columns,
+      styles:{cellWidth:"20px",fontSize:4},
+      tableWidth:'wrap'
+    })
+    doc.autoPrint();
+    //This is a key for printing
+    doc.output('dataurlnewwindow');
   }
   exportExcel(name,table) {
     import("xlsx").then(xlsx => {
@@ -43,15 +43,15 @@ doc.output('dataurlnewwindow');
         const excelBuffer: any = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
         this.saveAsExcelFile(excelBuffer, name);
     });
-}
-saveAsExcelFile(buffer: any, fileName: string): void {
-  import("file-saver").then(FileSaver => {
+  }
+  saveAsExcelFile(buffer: any, fileName: string): void {
+    import("file-saver").then(FileSaver => {
       let EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
       let EXCEL_EXTENSION = '.xlsx';
       const data: Blob = new Blob([buffer], {
           type: EXCEL_TYPE
       });
       FileSaver.saveAs(data, fileName + '_export_' + new Date().getTime() + EXCEL_EXTENSION);
-  });
-}
+    });
+  } 
 }
