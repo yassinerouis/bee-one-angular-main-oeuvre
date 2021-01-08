@@ -155,6 +155,12 @@
         "banque":"Banque",
         "rib":"RIB",
         "attachement":"Attachement société/ferme",
+        "entreeSortie":"Entrée/Sortie",
+        "entresSortie":[{"code":1,"name":"Entrée"},{"code":2,"name":"Sortie"}],
+        "date":"Date",
+        "heure":"Heure",
+        "filtreCaporal":"Filtre caporal",
+        "tableauOuvriers":"Tableau des ouvriers",
         "dossierPersonnel":{
             "name":"Dossier personnel",
             "ouvriers":"Ouvriers",

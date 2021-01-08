@@ -1,3 +1,4 @@
+import { QRCodeModule } from 'angular2-qrcode';
 import { NiveauScolaireService } from './../../services/niveau_scolaire/niveau-scolaire.service';
 import { QualificationPersonnelService } from './../../services/qualification_personnel/qualification-personnel.service';
 import { FonctionPersonnelService } from './../../services/fonction_personnel/fonction-personnel.service';
@@ -8,7 +9,6 @@ import { OuvriersService } from './../../services/ouvriers/ouvriers.service';
 import { LanguageService } from 'src/app/services/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { Component, Input, OnInit, ɵConsole } from '@angular/core';
 import { MessageService } from "primeng/api";
@@ -18,8 +18,7 @@ import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { SSL_OP_ALL } from 'constants';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
@@ -32,7 +31,7 @@ const doc = new jsPDF()
 })
 export class OuvriersComponent implements OnInit {
 
-
+qrCode = false
   //declaration des variables 
   ouvrier = {
     id:null,
@@ -54,7 +53,7 @@ export class OuvriersComponent implements OnInit {
     caporal:null,
     attache:null,
     categorie:null,
-    dateEmbauche:null,
+    dateEmbauche:new Date(),
     cnss:null,
     anciennete:null,
     droitConge:1.5,
@@ -86,7 +85,7 @@ export class OuvriersComponent implements OnInit {
   statuses: any[];
   loading: boolean = true;
   activityValues: number[] = [0, 100];
-  currentDate = new Date()
+
   listParcelles=[]
   id
   msgs=[]
@@ -99,6 +98,9 @@ export class OuvriersComponent implements OnInit {
   transform = true
   transformDetails = true
   selectedOuvriers=[]
+  
+  qrData = []
+  
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
     public lang:LanguageService,private ouvriersService:OuvriersService,private sfService:SocieteFermeService,
     private primesService:PrimesService,private parametrageAMC:ParametrageAmcService,private categorieService:CategoriePersonnelService,
@@ -367,53 +369,6 @@ amc=[]
 civilites = []
 situations = []
   ngOnInit() {
-    this.ouvrier = {
-      id:null,
-      matricule:null,
-      codeBarre:null,
-      civilite:null,
-      nom:null,
-      prenom:null,
-      cin:null,
-      dateNaissance:null,
-      situationFamiliale:null,
-      nombreEnfants:null,
-      addresse:null,
-      tel:null,
-      email:null,
-      niveauScolaire:null,
-      qualification:null,
-      fonction:null,
-      caporal:null,
-      attache:null,
-      categorie:null,
-      dateEmbauche:null,
-      cnss:null,
-      anciennete:null,
-      droitConge:1.5,
-      congeInitial:null,
-      tauxAssurance:null,
-      matriculeAMC:null,
-      optionAMC:null,
-      exercice:true,
-      contractuel:null,
-      formationPhyto:null,
-      observation:null,
-      salaireBase:null,
-      primes:[{
-        id:1,
-        prime:null,
-        montant:null
-      }],
-      unitePaiement:"1",
-      representeEquipe:null,
-      representeNombre:null,
-      modePaiement:"1",
-      banque:null,
-      rib:null,
-      societes:[],
-      fermes:[]
-    }
     this.ouvriersService.getOuvriers().subscribe(ouvriers=>{
       this.ouvriers=ouvriers
       this.loading = false
@@ -536,8 +491,72 @@ situations = []
     console.log(this.selectedColumns)
   }
   consulter(id){
-    this.edit(id)
-    this.consult=true
+    this.ouvrier.id=id
+    this.ouvriersService.getPrimes(id).subscribe(primes=>{
+     for(var i=0;i<primes['length'];i++){
+       this.ouvrier.primes[i]={
+         id:i+1,
+         prime:primes[i].IDPrime,
+         montant:primes[i].Montant
+       }
+     }
+   })
+     this.ouvriersService.getOuvrier(id).subscribe(ouvrier=>{
+         this.ouvrier.matricule=ouvrier[0].Mat,
+         this.ouvrier.codeBarre=ouvrier[0].BarcodesId,
+         this.ouvrier.civilite=ouvrier[0].Civilite,
+         this.ouvrier.nom=ouvrier[0].Nom,
+         this.ouvrier.prenom=ouvrier[0].Prenom,
+         this.ouvrier.cin=ouvrier[0].CIN,
+         this.ouvrier.dateNaissance=new Date(ouvrier[0].Dat_Nai),
+         this.ouvrier.situationFamiliale=ouvrier[0].Situ_Fam,
+         this.ouvrier.nombreEnfants=ouvrier[0].NBEnft,
+         this.ouvrier.addresse=ouvrier[0].Adr,
+         this.ouvrier.tel=ouvrier[0].Tel,
+         this.ouvrier.email=ouvrier[0].Email,
+         this.ouvrier.niveauScolaire=ouvrier[0].Niveau_Scol,
+         this.ouvrier.qualification=ouvrier[0].IDQualification_Personnel,
+         this.ouvrier.fonction=ouvrier[0].Pers_Fonction,
+         this.ouvrier.caporal=ouvrier[0].Caporale,
+         this.ouvrier.attache=ouvrier[0].Pers_Cap,
+         this.ouvrier.categorie=ouvrier[0].Categorie,
+         this.ouvrier.dateEmbauche=new Date(ouvrier[0].Date_Embauche),
+         this.ouvrier.cnss=ouvrier[0].CNSS,
+         this.ouvrier.anciennete=ouvrier[0].Pers_Ancte,
+         this.ouvrier.droitConge=ouvrier[0].Droit_conge,
+         this.ouvrier.tauxAssurance=ouvrier[0].Taux_assurance,
+         this.ouvrier.matriculeAMC=ouvrier[0].AMC,
+         this.ouvrier.optionAMC=ouvrier[0].IDParametrage_AMC,
+         this.ouvrier.exercice=ouvrier[0].En_exercice,
+         this.ouvrier.contractuel=ouvrier[0].Contractuel,
+         this.ouvrier.formationPhyto=ouvrier[0].formation_phyto,
+         this.ouvrier.observation=ouvrier[0].Observation,
+         this.ouvrier.salaireBase=ouvrier[0].Salaire_Base,
+         this.ouvrier.unitePaiement=ouvrier[0].Paye_par,
+         this.ouvrier.representeEquipe=ouvrier[0].NBRE?true:false,
+         this.ouvrier.representeNombre=ouvrier[0].NBRE,
+         this.ouvrier.modePaiement=ouvrier[0].Mode_reglement,
+         this.ouvrier.rib=ouvrier[0].Banque_Compte
+     })
+     this.checkedSocietes=[]
+     this.ouvrier.fermes=[]
+     this.ouvriersService.getFermes(id).subscribe(res=>{
+       for(var i=0;i<res['length'];i++){
+         this.ouvrier.fermes.push(res[i].IDFermes.toString())
+       }
+       console.log(this.ouvrier.fermes)
+     })
+     this.ouvriersService.getSocietes(id).subscribe(res=>{
+       for(var i=0;i<res['length'];i++){
+         this.checkedSocietes.push(res[i].ID_societe.toString())
+       }
+       console.log(this.checkedSocietes)
+     })
+     setTimeout(()=>{                           //<<<---using ()=> syntax
+       this.showForm()
+       this.id = id
+       this.consult=true
+      }, 1000);
   }
   //afficher la déclaration de la récolte sélectionnée dans le formulaire pour modification
   edit(id){
@@ -776,7 +795,11 @@ situations = []
     }
     this.exportService.exportExcel('declarationsRecolte',table)
   }
-    
+    generateQR(){
+      this.exportService.printQR()
+
+      
+    }
   //Ajouter un nouveau élément à la table si l'élément courant est valide
   addItem(){
     this.getSwalInteractions()
@@ -809,18 +832,32 @@ situations = []
       this.ouvrier.primes.splice(this.ouvrier.primes.indexOf(parcelle),1)
     }
   }
+  dataToString
   //pour afficher, vider et masquer le formulaire 
   showForm(){
-      this.declaration={date_recolte : new Date(),observations:null}
-      this.ouvrier.primes=[{
-        id:1,
-        prime:null,
-        montant:null
-      }]
-      this.forEdit = false
-      this.consult=false
-      this.form=!this.form
-      this.checkedSocietes=[]
+    this.ouvrier.dateEmbauche=new Date()
+    this.ouvrier.primes=[{
+      id:1,
+      prime:null,
+      montant:null
+    }]
+    this.forEdit = false
+    this.consult=false
+    this.form=!this.form
+    this.checkedSocietes=[]
+  }
+  generateCodes(){
+      this.getSwalInteractions()
+      this.selectedOuvriers.forEach(element=>{
+        console.log(element)
+        this.qrData.push(JSON.stringify({
+          matricule:element.Mat,
+          nom:element.Nom,
+          prenom:element.Prenom,
+          cin:element.CIN
+        }))
+        this.qrCode=true
+      })
   }
   //supprimer plusieurs declarations à la fois
   deleteselectedOuvriers(){

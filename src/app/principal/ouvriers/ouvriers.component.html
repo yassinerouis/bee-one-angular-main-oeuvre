@@ -1,7 +1,7 @@
 <!--
   Tableau qui affiche les Déclaration de la récolte
 -->
-<div *ngIf="!form" >
+<div *ngIf="!form &&!qrCode" >
   <div class="page-header">
     <h3 class="page-title">
       {{ 'mainOeuvre.ouvriers' | translate }}
@@ -16,7 +16,7 @@
     </div>
   </div>
   <div class="row">
-    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'115rem'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'80%'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
       [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
       [globalFilterFields]="fields"
@@ -25,7 +25,7 @@
         <colgroup>
           <col style="width:3rem">
           <col *ngFor="let selected of selectedColumns" [ngStyle]="setMyStyles()">
-          <col [ngStyle]="setMyStyles()">
+          <col style="width:10rem;">
         </colgroup>
       </ng-template>
       <ng-template pTemplate="caption">
@@ -49,6 +49,7 @@
           </ng-template>
         </p-multiSelect>
           <button *ngIf="selectedOuvriers.length>0" (onChange)="showSelected()" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
+          <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'mainOeuvre.codeBarre'|translate}}({{selectedOuvriers.length}})" icon="pi pi-print" class="p-button-success ml-1 mr-1" (click)="generateCodes()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
         </div>
       </ng-template>
       <ng-template pTemplate="header" let-columns>
@@ -106,7 +107,7 @@
   Formulaire d'ajout + modification
   tabulation : tabindex="1" 
 -->
-<div *ngIf="form" >
+<div *ngIf="form && !qrCode" >
     <div class="text-right">
       <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
     </div>
@@ -188,7 +189,7 @@
         </div>
         <div class="col-md-12 mb-3" >
           <label for="float-input" cols="100" >{{'mainOeuvre.niveauScolaire'|translate}}  </label>
-          <button pButton pRipple (click)="showModalDialog1()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+          <button pButton pRipple (click)="showModalDialog1()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
           <p-dropdown [autoDisplayFirst]="false" name="ns" [style]="{'width':'100%'}" [(ngModel)]="ouvrier.niveauScolaire" placeholder="{{'mainOeuvre.niveauScolaire'|translate}}..." [options]="niveaux" filter="true">
             <ng-template let-item pTemplate="selectedItem">
               <span >{{item.label}}</span>
@@ -209,7 +210,7 @@
         </p-dialog>
              <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.qualification'|translate}}  </label>
-          <button pButton pRipple (click)="showModalDialog2()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+          <button pButton pRipple (click)="showModalDialog2()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
           <p-dropdown [autoDisplayFirst]="false" name="qualif" [(ngModel)]="ouvrier.qualification" placeholder="{{'mainOeuvre.qualification'|translate}}..." [style]="{'width':'100%'}"  [options]="qualifications" filter="true">
             <ng-template let-item pTemplate="selectedItem">
               <span >{{item.label}}</span>
@@ -233,7 +234,7 @@
       <p-tabPanel header="{{'mainOeuvre.fonction'|translate}}">
         <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.fonction'|translate}} * </label>
-          <button pButton pRipple (click)="showModalDialog4()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+          <button pButton pRipple (click)="showModalDialog4()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
           <p-dropdown [autoDisplayFirst]="false" name="fct" [(ngModel)]="ouvrier.fonction" [required]="true" #fct="ngModel" placeholder="{{'mainOeuvre.fonction'|translate}}..." [style]="{'width':'100%'}" [options]="fonctions" >
             <ng-template let-item pTemplate="selectedItem">
               <span >{{item.label}}</span>
@@ -273,7 +274,7 @@
          
         <div class="col-md-12 mb-3" >
           <label for="float-input" cols="100" >{{'mainOeuvre.categorie'|translate}}  </label>
-          <button pButton pRipple (click)="showModalDialog3()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3"></button>
+          <button pButton pRipple (click)="showModalDialog3()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
           
           <p-dropdown [autoDisplayFirst]="false" name="categorie" [(ngModel)]="ouvrier.categorie" placeholder="{{'mainOeuvre.categorie'|translate}}..." [style]="{'width':'100%'}" [options]="categories" filter="true">
             <ng-template let-item pTemplate="selectedItem">
@@ -295,7 +296,7 @@
         </p-dialog>
 
         <div class="col-md-12" >   
-          <label for="float-input" cols="100" >{{'mainOeuvre.dateEmbauche'|translate}} * </label>
+          <label for="float-input" cols="100" >{{'mainOeuvre.dateEmbauche'|translate}} *  </label>
           <p-calendar class="date" name="dEmb" [maxDate]="currentDate" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateEmbauche" #dEmb="ngModel" required></p-calendar>
         </div>
         <div class="col-md-12" >   
@@ -384,7 +385,7 @@
                   <p-inputNumber [(ngModel)]="prime.montant" [style]="{'width':'100%'}" [minFractionDigits]="2" mode="decimal" class="p-inputtext-sm"  [min]="0" ></p-inputNumber>
                 </div>
                 <div class="col-md" [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">
-                    <button pButton pRipple type="button" icon="pi pi-minus" class="p-button-rounded p-button-warning mr-1" (click)="removeItem(prime)"></button>
+                    <button pButton pRipple type="button" icon="pi pi-minus " class="p-button-rounded p-button-warning mr-1" (click)="removeItem(prime)"></button>
                     <button *ngIf="last" pButton pRipple type="button" icon="pi pi-plus"  (click)="addItem()" class="p-button-rounded p-button-info"></button>  
                 </div>
               </div>
@@ -416,7 +417,6 @@
           <label for="float-input" cols="100" >{{'mainOeuvre.banque'|translate}}  </label>
           <p-dropdown name="banques" [options]="banques"  [style]="{'width':'100%'}" placeholder="{{'mainOeuvre.banque'|translate}}..." [(ngModel)]="ouvrier.banque" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                 
         </div>
-   
         <div class="col-md-12" >   
           <label for="float-input" cols="100" >{{'mainOeuvre.rib'|translate}}  </label>
           <input type="text" name="rib" pInputText style="width:100%;" [(ngModel)]="ouvrier.rib"/>                     
@@ -483,4 +483,49 @@
         </div>
       </p-tabPanel>
   </p-tabView>
+</div>
+<div *ngIf="qrCode" >
+  <div class="row">
+    <div class="col-md-10">
+      <h5 class="mb-4">{{ 'mainOeuvre.codeBarre' | translate }}</h5>
+    </div>
+    <div class="col-md-1">  
+      <button pButton pRipple type="button" (click)="generateQR()" icon="pi pi-file-pdf" label="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
+    </div>
+    <div class="col-md-1">
+      <button type="button" pButton pRipple icon="pi pi-times" (click)="selectedOuvriers=[];qrData=[];qrCode=!qrCode" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
+    </div>
+  </div>
+<div class="row" id="topdf" #topdf>
+  
+
+  <div *ngFor="let data of qrData; index as i;" class="col-md-6 mt-2 mb-2">
+    <p-card>
+      <div class="row mb-4">
+        <div class="col-md-6">Carte d'identification</div>
+        <div class="col-md-6">{{ selectedOuvriers[i].Mat }}</div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <p>
+            {{ 'mainOeuvre.matricule' | translate }} : {{ selectedOuvriers[i].Mat }}
+          </p>
+          <p>
+            {{ 'mainOeuvre.nom' | translate }} : {{ selectedOuvriers[i].Nom }}
+          </p>
+          <p>
+            {{ 'mainOeuvre.prenom' | translate }} : {{ selectedOuvriers[i].Prenom }}
+          </p>
+          <p>
+            {{ 'mainOeuvre.CIN' | translate }} : {{ selectedOuvriers[i].CIN }}
+          </p>
+        </div>
+        <div class="col-md-6">    
+          <qr-code [value]="data" size="200"></qr-code>
+        </div>
+      </div>
+    </p-card>
+    
+  </div>
+</div>
 </div>

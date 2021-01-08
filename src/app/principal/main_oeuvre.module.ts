@@ -28,15 +28,20 @@ import {CheckboxModule} from 'primeng/checkbox';
 import {TabViewModule} from 'primeng/tabview';
 import {RadioButtonModule} from 'primeng/radiobutton';
 import { MessageService } from 'primeng/api';
+import { QRCodeModule } from 'angular2-qrcode';
+import { PresenceComponent } from './pointage-presense/presence/presence.component';
+import {CardModule} from 'primeng/card';
 
 const routes: Routes = [
-  { path: 'ouvriers', component: OuvriersComponent }
+  { path: 'ouvriers', component: OuvriersComponent },
+  { path: 'presence', component: PresenceComponent }
 ]
 
 @NgModule({
-  declarations: [OuvriersComponent],
+  declarations: [OuvriersComponent, PresenceComponent],
   imports: [
     CommonModule,
+    CardModule,
     RouterModule.forChild(routes),
     TableModule,
     CalendarModule,
@@ -46,6 +51,7 @@ const routes: Routes = [
 		ContextMenuModule,
 		DropdownModule,
     ButtonModule,
+    QRCodeModule,
     SweetAlert2Module.forRoot(),
     ToastModule,
     FormsModule,

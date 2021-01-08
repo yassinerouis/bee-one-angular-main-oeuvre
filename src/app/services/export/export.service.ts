@@ -1,11 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ViewChild, ElementRef } from '@angular/core';
 
 import jsPDF from 'jspdf'
+import * as jspdf from 'jspdf';  
+
 import 'jspdf-autotable'
+import html2canvas from 'html2canvas';  
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import htmlToPdfmake from 'html-to-pdfmake';
+
 @Injectable({
   providedIn: 'root'
 })
 export class ExportService {
+  @ViewChild('topdf') topdf: ElementRef;
+
   constructor(){
   }
   setTable(table:any){
@@ -23,6 +33,7 @@ export class ExportService {
     })
     doc.save(name)
   }
+
   printPdf(columns){
     var doc:any = new jsPDF();
     doc.setFontSize(1);
@@ -35,6 +46,19 @@ export class ExportService {
     doc.autoPrint();
     //This is a key for printing
     doc.output('dataurlnewwindow');
+  }
+  printQR(){
+    var data = document.getElementById('topdf');  
+    html2canvas(data).then(canvas => {  
+      // Few necessary setting options  
+      var imgWidth = 200;   
+      var imgHeight = canvas.height * imgWidth / canvas.width;    
+      const contentDataURL = canvas.toDataURL('image/png')  
+      let pdf = new jsPDF('p', 'mm', 'a4'); // A4 size page of PDF  
+      var position = 20;  
+      pdf.addImage(contentDataURL, 'PNG', 0, position, imgWidth, imgHeight)  
+      pdf.save("fileName"); // Generated PDF  
+    });   
   }
   exportExcel(name,table) {
     import("xlsx").then(xlsx => {
