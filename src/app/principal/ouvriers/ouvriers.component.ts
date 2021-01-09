@@ -18,7 +18,6 @@ import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
-import { SSL_OP_ALL } from 'constants';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);

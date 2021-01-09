@@ -1,20 +1,17 @@
 import { PresenceService } from './../../../services/pointage-presence/presence.service';
 import { OuvriersService } from './../../../services/ouvriers/ouvriers.service';
 
-import { QRCodeModule } from 'angular2-qrcode';
 import { LanguageService } from 'src/app/services/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-import { Component, Input, OnInit, ɵConsole } from '@angular/core';
-import { MessageService } from "primeng/api";
+import { Component, Input, OnInit } from '@angular/core';
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
-import { SSL_OP_ALL } from 'constants';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
@@ -278,6 +275,7 @@ amc=[]
 civilites = []
 situations = []
 presences = []
+lowerThan12 = true
   ngOnInit() {
     this.presenceService.getAll().subscribe(result=>{
       this.presences = [result]
@@ -457,7 +455,7 @@ presences = []
   }
     generateQR(){
       this.selectedOuvriers.forEach(element=>{
-        this.exportService.printQR(element.Nom+element.Prenom,element.Mat)
+        this.exportService.printQR()
       })
     }
   //Ajouter un nouveau élément à la table si l'élément courant est valide
