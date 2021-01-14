@@ -1,3 +1,4 @@
+import { SqlRequestService } from './../../sql-request/sql-request.service';
 import { QRCodeModule } from 'angular2-qrcode';
 import { NiveauScolaireService } from './../../services/niveau_scolaire/niveau-scolaire.service';
 import { QualificationPersonnelService } from './../../services/qualification_personnel/qualification-personnel.service';
@@ -11,7 +12,7 @@ import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { Component, Input, OnInit, ɵConsole } from '@angular/core';
-import { MessageService } from "primeng/api";
+import { LazyLoadEvent, MessageService } from "primeng/api";
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { ExportService } from 'src/app/services/export/export.service';
@@ -92,8 +93,6 @@ qrCode = false
   declarations:any
   declaration={date_recolte : new Date(),observations:null}
   form=false;
-  cols:any
-  _selectedColumns:any
   transform = true
   transformDetails = true
   selectedOuvriers=[]
@@ -104,7 +103,8 @@ qrCode = false
     public lang:LanguageService,private ouvriersService:OuvriersService,private sfService:SocieteFermeService,
     private primesService:PrimesService,private parametrageAMC:ParametrageAmcService,private categorieService:CategoriePersonnelService,
     private fonctionService:FonctionPersonnelService,private qualificationService:QualificationPersonnelService,
-    private niveauService:NiveauScolaireService) {
+    private niveauService:NiveauScolaireService,
+    private sqlService:SqlRequestService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
@@ -201,7 +201,25 @@ set selectedColumns(val: any[]) {
 typeof(x){
   return typeof(x);
 }
-
+globalSearch:string
+onInputSearch(){
+  let selectedColumns=[]
+  if(this.globalSearch){
+    this.selectedColumns.forEach(element => {
+      if( element.field!='En_exercice' && element.field!='Contractuel' && element.field!='formation_phyto'){
+        selectedColumns.push({field:element.field})
+      }
+    });  
+    this.filter.option1=this.sqlService.getDataGlobalSearchLike(selectedColumns,this.globalSearch)
+  }else{
+    this.filter.option1=''
+  }
+  var event={
+    first: 0,
+    rows: 10
+  } 
+  this.loadOuvriers(event)
+}
 transformDate(ouvriers){
   let ouvriersWithTransformedDate = ouvriers
   if(this.transform){
@@ -217,10 +235,7 @@ transformDateDetails(declarations){
   let declarationsWithTransformedDate = declarations
   if(this.transformDetails){
     declarationsWithTransformedDate.forEach(element => {
-      console.log(element.DateRecolte)
-      
       element.DateRecolte = this.datepipe.transform(element.DateRecolte, 'dd/MM/yyyy')
-      console.log(element.DateRecolte)
     });
     this.transformDetails=false
   }
@@ -254,6 +269,30 @@ checkSoc(e,s){
     })
   }
 }
+loadOuvriers(event){
+  console.log(this.sqlService.getDetailsFilter(event.filters))
+  if(event.filters && this.sqlService.getDetailsFilter(event.filters)!=''){
+    this.filter.option2=this.sqlService.getDetailsFilter(event.filters)
+  }else{
+    this.filter.option2=''
+  }
+  try{
+    this.loading = true;
+    this.filter.from=event.first
+    this.filter.to=event.first+event.rows
+    this.getLength()
+    this.getOuvriers()
+    setTimeout(() => {
+      if (this.ouvriers) {
+        console.log(this.ouvriers)
+        this.loadedOuvriers = this.ouvriers
+        this.loading = false;
+      }
+    }, 1000);
+  }catch(err){
+    console.log(err)
+  }
+}
 checkedSocietes = []
 societes = []
 caporals=[]
@@ -263,7 +302,6 @@ displayModal1 : boolean = false;
 displayModal2 : boolean = false;
 displayModal3 : boolean = false;
 displayModal4 : boolean = false;
-
 niveaux=[]
 qualifications=[]
 categories=[]
@@ -296,7 +334,6 @@ addNiveau(){
   })
 }
 addQualification(){
-
   this.qualificationService.add({qualification:this.qualification}).subscribe(res=>{
     if(res[0].IDQualification_Personnel){
       Swal.fire({
@@ -332,10 +369,8 @@ addCategorie(){
     }
     this.displayModal3=false
   })
-
 }
 addFonction(){
-  
   this.fonctionService.add({fonction:this.fonction}).subscribe(res=>{
     if(res[0].ID){
       Swal.fire({
@@ -364,123 +399,143 @@ showModalDialog4() {
   this.displayModal4 = true;
 }
 ouvriers:any
+loadedOuvriers:any
 amc=[]
 civilites = []
 situations = []
+cols = [
+  { field: 'Mat', header: 'matricule' },
+  { field: 'Nom', header: 'nom' },
+  { field: 'Prenom', header: 'prenom' },
+  { field: 'CIN', header: 'CIN' },
+  { field: 'Tel', header: 'tel' },
+  { field: 'Email', header: 'email' },
+  { field: 'Civilite', header: 'civilite' },
+  { field: 'Adr', header: 'adresse' },
+  { field: 'Dat_Nai', header: 'dateNaissance' },
+  { field: 'Situ_Fam', header: 'situationFamiliale' },
+  { field: 'NBEnft', header: 'nombreEnfants' },
+  { field: 'Niveau_scolaire', header: 'niveauScolaire' },
+  { field: 'attache', header: 'attache' },
+  { field: 'Droit_conge', header: 'droitConge' },
+  { field: 'Taux_assurance', header: 'tauxAssurance' },
+  { field: 'AMC', header: 'matriculeAMC' },
+  { field: 'formation_phyto', header: 'fomationPhyto' },
+  { field: 'Prime_motivation', header: 'primes' },
+  { field: 'Contractuel', header: 'contractuel' },
+  { field: 'Type_Paie', header: 'modePaiement' },
+  { field: 'Banque', header: 'banque' },
+  { field: 'Banque_Compte', header: 'rib' },
+  { field: 'Fonction_Personnel', header: 'fonction' },
+  { field: 'Categ', header: 'categorie' },
+  { field: 'Qualification', header: 'qualification' },
+  { field: 'Date_Embauche', header: 'dateEmbauche' },
+  { field: 'CNSS', header: 'cnss' },
+  { field: 'Pers_Ancte', header: 'anciennete' },
+  { field: 'En_exercice', header: 'exercice' },
+  { field: 'Salaire_Base', header: 'salaireBase' }
+];
+_selectedColumns = [
+  { field: 'Mat', header: 'matricule' },
+  { field: 'Nom', header: 'nom' },
+  { field: 'Prenom', header: 'prenom' },
+  { field: 'CIN', header: 'CIN' },
+  { field: 'CNSS', header: 'cnss' },
+  { field: 'Tel', header: 'tel' },
+  { field: 'Email', header: 'email' },
+  { field: 'Civilite', header: 'civilite' },
+  { field: 'Adr', header: 'adresse' },
+  { field: 'Dat_Nai', header: 'dateNaissance' },
+  { field: 'Situ_Fam', header: 'situationFamiliale' },
+  { field: 'NBEnft', header: 'nombreEnfants' },
+  { field: 'Niveau_scolaire', header: 'niveauScolaire' },
+  { field: 'Fonction_Personnel', header: 'fonction' },
+];
+getOuvriers(){
+  console.log(this.filter)
+  this.ouvriersService.getOuvriers(this.filter).subscribe(ouvriers=>{
+    this.ouvriers=ouvriers
+    this.loading = false
+  })
+}
+getLength(){
+  this.ouvriersService.getTotalRecords(this.filter.option1,this.filter.option2).subscribe(res=>{
+    this.totalRecords=res[0].total
+  })
+}
+getPrimes(){
+  this.primesService.getPrimes().subscribe(primes=>{
+    this.primes.push({label:'Traitée en surplus',value:-1})
+    for(var i=0;i<primes['length'];i++){
+      this.primes.push({label:primes[i].Nom_prime,value:primes[i].IDPrime})
+    }
+  })
+}
+getCaporals(){
+  this.ouvriersService.getCaporal().subscribe(caporals=>{
+    for(var i=0;i<caporals['length'];i++){
+      this.caporals[i] = {label:caporals[i].mat+":"+caporals[i].nom+" "+caporals[i].prenom,value:caporals[i].id}
+    }
+  })
+}
+getParametrageAMC(){
+  this.parametrageAMC.getAll().subscribe(amc=>{
+    for(var i=0;i<amc['length'];i++){
+      this.amc[i]={label:amc[i].Libelle,value:amc[i].IDParametrage_AMC}
+    }
+  })
+}
+getSocietes(){
+  this.sfService.getSocietes().subscribe(societes=>{
+    console.log(societes)
+    for(var i=0;i<societes['length'];i++){
+      let societe={id:societes[i].ID,name:societes[i].Rais_Social}
+      this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
+        this.societes.push({societe:societe,fermes:fermes})
+      }) 
+    }
+  })
+}
+getParams(){
+  this.niveauService.getAll().subscribe(res=>{
+    for(var i=0;i<res['length'];i++){
+      this.niveaux[i]={label:res[i].Niveau_scolaire,value:res[i].IDNiveau_Scolaire}
+    }
+  })
+  this.qualificationService.getAll().subscribe(res=>{
+    for(var i=0;i<res['length'];i++){
+      this.qualifications[i]={label:res[i].Qualification,value:res[i].IDQualification_Personnel}
+    }
+  })
+  this.categorieService.getAll().subscribe(res=>{
+    for(var i=0;i<res['length'];i++){
+      this.categories[i]={label:res[i].Categorie,value:res[i].ID}
+    }
+  })
+  this.fonctionService.getAll().subscribe(res=>{
+    for(var i=0;i<res['length'];i++){
+      this.fonctions[i]={label:res[i].Fonction_Personnel,value:res[i].ID}
+    }
+  })
+}
+filter = {from:0,to:10,option1:'',option2:''}
+totalRecords
   ngOnInit() {
-    this.ouvriersService.getOuvriers().subscribe(ouvriers=>{
-      this.ouvriers=ouvriers
-      this.loading = false
-    })
     this.translateService.get(['mainOeuvre']).subscribe(mo=>{
       this.civilites = mo.mainOeuvre.civilites
       this.situations = mo.mainOeuvre.situations
+      this.typePaie=mo.mainOeuvre.methodePaie[0].name
     })
-    this.primesService.getPrimes().subscribe(primes=>{
-      this.primes.push({label:'Traitée en surplus',value:-1})
-      for(var i=0;i<primes['length'];i++){
-        this.primes.push({label:primes[i].Nom_prime,value:primes[i].IDPrime})
-      }
-    })
-    this.translateService.get(['mainOeuvre']).subscribe(res=>{
-      this.typePaie=res.mainOeuvre.methodePaie[0].name
-    })
-    this.ouvriersService.getCaporal().subscribe(caporals=>{
-      for(var i=0;i<caporals['length'];i++){
-        this.caporals[i] = {label:caporals[i].mat+":"+caporals[i].nom+" "+caporals[i].prenom,value:caporals[i].id}
-      }
-    })
-    this.parametrageAMC.getAll().subscribe(amc=>{
-      for(var i=0;i<amc['length'];i++){
-        this.amc[i]={label:amc[i].Libelle,value:amc[i].IDParametrage_AMC}
-      }
-    })
-    this.sfService.getSocietes().subscribe(societes=>{
-      console.log(societes)
-      for(var i=0;i<societes['length'];i++){
-        let societe={id:societes[i].ID,name:societes[i].Rais_Social}
-        this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
-          this.societes.push({societe:societe,fermes:fermes})
-        }) 
-      }
-    })
-    this.niveauService.getAll().subscribe(res=>{
-      for(var i=0;i<res['length'];i++){
-        this.niveaux[i]={label:res[i].Niveau_scolaire,value:res[i].IDNiveau_Scolaire}
-      }
-    })
-    this.qualificationService.getAll().subscribe(res=>{
-      for(var i=0;i<res['length'];i++){
-        this.qualifications[i]={label:res[i].Qualification,value:res[i].IDQualification_Personnel}
-      }
-    })
-    this.categorieService.getAll().subscribe(res=>{
-      for(var i=0;i<res['length'];i++){
-        this.categories[i]={label:res[i].Categorie,value:res[i].ID}
-      }
-    })
-    this.fonctionService.getAll().subscribe(res=>{
-      for(var i=0;i<res['length'];i++){
-        this.fonctions[i]={label:res[i].Fonction_Personnel,value:res[i].ID}
-      }
-    })
+   var lazyEvent:LazyLoadEvent
+   this.loadOuvriers(lazyEvent)
     this.selectedOuvriers=[]
-    console.log(this.swalInteractions)
     this.ids=[]
-    
-    this.cols = [
-      { field: 'Mat', header: 'matricule' },
-      { field: 'Nom', header: 'nom' },
-      { field: 'Prenom', header: 'prenom' },
-      { field: 'CIN', header: 'CIN' },
-      { field: 'Tel', header: 'tel' },
-      { field: 'Email', header: 'email' },
-      { field: 'Civilite', header: 'civilite' },
-      { field: 'Adr', header: 'Adresse' },
-      { field: 'Dat_Nai', header: 'dateNaissance' },
-      { field: 'Situ_Fam', header: 'situationFamiliale' },
-      { field: 'NBEnft', header: 'nombreEnfants' },
-      { field: 'Niveau_scolaire', header: 'niveauScolaire' },
-      { field: 'attache', header: 'attache' },
-      { field: 'Droit_conge', header: 'droitConge' },
-      { field: 'Taux_assurance', header: 'tauxAssurance' },
-      { field: 'AMC', header: 'matriculeAMC' },
-      { field: 'formation_phyto', header: 'fomationPhyto' },
-      { field: 'Prime_motivation', header: 'primes' },
-      { field: 'Contractuel', header: 'contractuel' },
-      { field: 'Type_Paie', header: 'modePaiement' },
-      { field: 'Banque', header: 'banque' },
-      { field: 'Banque_Compte', header: 'rib' },
-      { field: 'Fonction_Personnel', header: 'fonction' },
-      { field: 'Categ', header: 'categorie' },
-      { field: 'Qualification', header: 'qualification' },
-      { field: 'Date_Embauche', header: 'dateEmbauche' },
-      { field: 'CNSS', header: 'cnss' },
-      { field: 'Pers_Ancte', header: 'anciennete' },
-      { field: 'En_exercice', header: 'exercice' },
-      { field: 'Salaire_Base', header: 'salaireBase' }
-  ];
-  this._selectedColumns = [
-      { field: 'Mat', header: 'matricule' },
-      { field: 'Nom', header: 'nom' },
-      { field: 'Prenom', header: 'prenom' },
-      { field: 'CIN', header: 'CIN' },
-      { field: 'CNSS', header: 'cnss' },
-      { field: 'Tel', header: 'tel' },
-      { field: 'Email', header: 'email' },
-      { field: 'Civilite', header: 'civilite' },
-      { field: 'Adr', header: 'adresse' },
-      { field: 'Dat_Nai', header: 'dateNaissance' },
-      { field: 'Situ_Fam', header: 'situationFamiliale' },
-      { field: 'NBEnft', header: 'nombreEnfants' },
-      { field: 'Niveau_scolaire', header: 'niveauScolaire' },
-      { field: 'Fonction_Personnel', header: 'fonction' },
-    ];
+
   }
 
   setMyStyles() {
     let styles = {
-      'width':'7rem',
+      'width':'10rem',
     };
     return styles;
   }
@@ -570,6 +625,8 @@ situations = []
     }
   })
     this.ouvriersService.getOuvrier(id).subscribe(ouvrier=>{
+      console.log(id)
+      console.log(ouvrier)
         this.ouvrier.matricule=ouvrier[0].Mat,
         this.ouvrier.codeBarre=ouvrier[0].BarcodesId,
         this.ouvrier.civilite=ouvrier[0].Civilite,
@@ -623,6 +680,7 @@ situations = []
     setTimeout(()=>{                           //<<<---using ()=> syntax
       this.showForm()
       this.id = id
+      console.log(this.ouvrier)
       this.forEdit = true
     }, 1000);
   }
@@ -834,6 +892,14 @@ situations = []
   dataToString
   //pour afficher, vider et masquer le formulaire 
   showForm(){
+    this.form=!this.form
+    if(this.form==true){
+      this.getPrimes()
+      this.getCaporals()
+      this.getParametrageAMC()
+      this.getSocietes()
+      this.getParams()
+    }
     this.ouvrier.dateEmbauche=new Date()
     this.ouvrier.primes=[{
       id:1,
@@ -842,7 +908,6 @@ situations = []
     }]
     this.forEdit = false
     this.consult=false
-    this.form=!this.form
     this.checkedSocietes=[]
   }
   generateCodes(){

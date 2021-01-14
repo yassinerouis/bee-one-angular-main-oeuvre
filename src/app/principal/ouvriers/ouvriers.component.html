@@ -16,11 +16,10 @@
     </div>
   </div>
   <div class="row">
-    <p-table #dt [value]="ouvriers" [scrollable]="true" [style]="{width:'80%'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+    <p-table #dt [value]="loadedOuvriers" [lazy]="true" (onLazyLoad)="loadOuvriers($event)"  [scrollable]="true" [style]="{width:'90rem'}" [columns]="selectedColumns" [totalRecords]="totalRecords" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
       [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
-      [globalFilterFields]="fields"
-      >
+      [globalFilterFields]="fields">
       <ng-template pTemplate="colgroup" let-columns>
         <colgroup>
           <col style="width:3rem">
@@ -32,7 +31,7 @@
         <div class="p-d-flex">
           <span class="p-input-icon-left p-ml-auto">
             <i class="pi pi-search"></i>
-            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{'primeng.recherche' |translate}}" />
+            <input pInputText type="text" (input)="onInputSearch()" [(ngModel)]="globalSearch" placeholder="{{'primeng.recherche' |translate}}" />
           </span>
          <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" (onChange)="selectColumn($event)"
           selectedItemsLabel="{0} {{'primeng.selectedColumns'|translate}}" [style]="{minWidth: '200px'}" placeholder="{{'primeng.choiceColumns'|translate}}"
@@ -80,8 +79,8 @@
           <td>
             <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedOuvriers"></p-checkbox>
           </td>
-          <td *ngFor="let col of columns">
-            <div *ngIf="col.field=='Civilite'&&civilites[declaration[col.field]-1]" class="text-center"> {{civilites[declaration[col.field]-1].label }}</div>
+          <td *ngFor="let col of columns"> 
+            <div *ngIf="col.field=='Civilite' && civilites[declaration[col.field]-1]" class="text-center">{{civilites[declaration[col.field]-1].label }}</div>
             <div *ngIf="col.field=='Situ_Fam' && situations[declaration[col.field]-1]" class="text-center">{{situations[declaration[col.field]-1].label }}</div>
             <div *ngIf="col.field!='Civilite' && col.field!='Situ_Fam' && col.field == 'Dat_Nai' ||col.field =='Date_Embauche'" class="text-center">{{declaration[col.field] | date: 'MM/dd/yyyy' }}</div>
             <div *ngIf="col.field!='Civilite' && col.field!='Situ_Fam' && col.field != 'Dat_Nai' && col.field !='Date_Embauche' && typeof(declaration[col.field])!='number'" >{{declaration[col.field]}}</div>

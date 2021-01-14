@@ -10,11 +10,14 @@ export class OuvriersService {
   getCaporal(){
     return this.http.get(this.url+"main_oeuvre_ouvriers/getCaporals")
   }
-  getOuvriers(){
-    return this.http.get(this.url+"personnel_ouvrier")
+  getOuvriers(data){
+    return this.http.post(this.url+"personnel_ouvrier/getOuvriers",data)
   }
   getOuvrier(ID){
     return this.http.get(this.url+"personnel_ouvrier/getOne/"+ID)
+  }
+  getTotalRecords(option1,option2){
+    return this.http.post(this.url+"personnel_ouvrier/getLength",{option1:option1,option2:option2})
   }
   getFermes(ID){
     return this.http.get(this.url+"personnel_ouvrier/getFermes/"+ID)

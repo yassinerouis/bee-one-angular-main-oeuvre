@@ -36,6 +36,7 @@
     "jquery": "^3.5.1",
     "jspdf": "^2.2.0",
     "jspdf-autotable": "^3.5.13",
+    "lodash": "^4.17.20",
     "ng2-charts": "^2.4.2",
     "ngx-cookie-service": "^11.0.2",
     "node-sass": "^4.14.1",
