@@ -1,6 +1,7 @@
 <!--
   Tableau qui affiche les Déclaration de la récolte
 -->
+
 <div *ngIf="!form &&!qrCode" >
   <div class="page-header">
     <h3 class="page-title">
@@ -57,12 +58,38 @@
             <p-checkbox (onChange)="showOnlySelected($event)"></p-checkbox>
           </th>
           <th *ngFor="let col of columns">
-            <div *ngIf="col.field != 'Dat_Nai' && col.field !='Date_Embauche'"
+            <div *ngIf="col.field == 'Civilite'" class="p-d-flex p-jc-between p-ai-center">
+              {{'mainOeuvre.'+col.header |translate}}
+              <p-columnFilter field="Civilite" matchMode="equals" display="menu">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [ngModel]="value" [options]="civilites" (onChange)="filter($event.value)"
+                    placeholder="Any">
+                    <ng-template let-option pTemplate="item">
+                      <span [class]="'customer-badge status-' + option.value">{{option.label}}</span>
+                    </ng-template>
+                  </p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </div>
+            <div *ngIf="col.field == 'Situ_Fam'" class="p-d-flex p-jc-between p-ai-center">
+                {{'mainOeuvre.'+col.header |translate}}
+              <p-columnFilter field="Situ_Fam" matchMode="equals" display="menu">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [ngModel]="value" [options]="situations" (onChange)="filter($event.value)"
+                    placeholder="Any">
+                    <ng-template let-option pTemplate="item">
+                      <span [class]="'customer-badge status-' + option.value">{{option.label}}</span>
+                    </ng-template>
+                  </p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </div>
+            <div *ngIf="col.field != 'Dat_Nai' && col.field !='Date_Embauche' && col.field != 'Situ_Fam'  && col.field != 'Civilite'"
             class="p-d-flex p-jc-between p-ai-center">
             {{'mainOeuvre.'+col.header |translate}}
               <p-columnFilter type="text" field="{{col.field}}" display="menu"></p-columnFilter>
             </div>
-            <div *ngIf="col.field == 'Dat_Nai' ||col.field =='Date_Embauche'" class="p-d-flex p-jc-between p-ai-center">
+            <div *ngIf="col.field == 'Dat_Nai' ||col.field =='Date_Embauche' && col.field != 'Situ_Fam'  && col.field != 'Civilite'" class="p-d-flex p-jc-between p-ai-center">
               {{'mainOeuvre.'+col.header | translate}}
               <p-columnFilter type="date" field="{{col.field}}" display="menu"></p-columnFilter>            
             </div>
@@ -106,7 +133,399 @@
   Formulaire d'ajout + modification
   tabulation : tabindex="1" 
 -->
+
 <div *ngIf="form && !qrCode" >
+  <div class="text-right">
+    <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
+  </div>
+  <p-steps [model]="items" [(activeIndex)]="activeIndex"></p-steps>
+  <div class="stepsdemo-content" *ngIf="page==1">
+    <p-card>
+        <ng-template pTemplate="content">
+            <div class="p-fluid row">
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.matricule'|translate}} * </label>
+                <input type="text" pInputText style="width:100%;" name="mat" [(ngModel)]="ouvrier.matricule" #mat="ngModel" required />                     
+                <small *ngIf="(mat.invalid && submitted) || (mat.dirty && mat.invalid)" class="p-error">{{'mainOeuvre.matricule'|translate}} {{'global.obligatoire'|translate}}.</small>
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.civilite'|translate}} *</label>
+                <p-dropdown [autoDisplayFirst]="false" name="civilite" [(ngModel)]="ouvrier.civilite" #civilite="ngModel" [required]="true" [options]="'mainOeuvre.civilites'|translate" placeholder="{{'mainOeuvre.civilite'|translate}}..." [style]="{'width':'100%','min-width':'100%'}" filter="true">
+                  <ng-template let-item pTemplate="selectedItem">
+                    <span >{{item.label}}</span>
+                  </ng-template>
+                  <ng-template let-caporal pTemplate="item">
+                    <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                      <div>{{caporal.label}}</div>     
+                    </div>
+                  </ng-template>
+                </p-dropdown> 
+                <small *ngIf="(civilite.invalid && submitted) || (civilite.dirty && civilite.invalid)" class="p-error">{{'mainOeuvre.civilite'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.CIN'|translate}} *</label>
+                <input type="text" pInputText style="width:100%;" name="cin" [(ngModel)]="ouvrier.cin" #cin="ngModel" required/>                     
+                <small *ngIf="(cin.invalid && submitted) || (cin.dirty && cin.invalid)" class="p-error">{{'mainOeuvre.CIN'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.codeBarre'|translate}}</label>
+                <input type="text" pInputText style="width:100%;"  name="codeBarre"  [(ngModel)]="ouvrier.codeBarre" />                     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.nom'|translate}} * </label>
+                <input type="text" pInputText style="width:100%;" name="nom" [(ngModel)]="ouvrier.nom"  #nom="ngModel" required/>                     
+                <small *ngIf="(nom.invalid && submitted) || (nom.dirty && nom.invalid)" class="p-error">{{'mainOeuvre.nom'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.prenom'|translate}} * </label>
+                <input type="text" pInputText style="width:100%;" name="prenom" [(ngModel)]="ouvrier.prenom"  #prenom="ngModel" required/>                     
+                <small *ngIf="(prenom.invalid && submitted) || (prenom.dirty && prenom.invalid)" class="p-error">{{'mainOeuvre.prenom'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input">{{'mainOeuvre.dateNaissance'|translate}} *</label>
+                <p-calendar class="date" [maxDate]="currentDate" name="dn" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateNaissance" #dn="ngModel" required></p-calendar>
+                <small *ngIf="(dn.invalid && submitted) || (dn.dirty && dn.invalid)" class="p-error">{{'mainOeuvre.dateNaissance'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                
+                <label for="float-input" cols="100" >{{'mainOeuvre.situationFamiliale'|translate}} * </label>
+                <p-dropdown [autoDisplayFirst]="false" name="sf"  [required]="true" [(ngModel)]="ouvrier.situationFamiliale" #sf="ngModel" [options]="'mainOeuvre.situations'|translate" placeholder="{{'mainOeuvre.situationFamiliale'|translate}}..." [style]="{'width':'100%','min-width':'100%'}" filter="true">
+                  <ng-template let-item pTemplate="selectedItem">
+                    <span >{{item.label}}</span>
+                  </ng-template>
+                  <ng-template let-item pTemplate="item">
+                    <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                      <div>{{item.label}}</div>     
+                    </div>
+                  </ng-template>
+                </p-dropdown>   
+                <small *ngIf="(sf.invalid && submitted) || (sf.dirty && sf.invalid)" class="p-error">{{'mainOeuvre.situationFamiliale'|translate}} {{'global.obligatoire'|translate}}.</small>     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.nombreEnfants'|translate}}  </label>
+                <p-inputNumber [style]="{'width':'100%'}" name="nbrE" [(ngModel)]="ouvrier.nombreEnfants"></p-inputNumber>
+              </div>
+              <div class="col-md-6 mb-3" >
+                
+                <label for="float-input" cols="100" >{{'mainOeuvre.adresse'|translate}}  </label>
+                <input type="text" pInputText style="width:100%;" name="adr" [(ngModel)]="ouvrier.addresse"/>                     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.tel'|translate}}  </label>
+                <input type="text" pInputText style="width:100%;" name="tel" [(ngModel)]="ouvrier.tel"/>                     
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="float-input">{{'mainOeuvre.email'|translate}}</label>
+                <input type="text" pInputText style="width:100%;" name="email" [(ngModel)]="ouvrier.email"/>                     
+              </div>
+              <div class="col-md-6 mb-3" >
+                <label for="float-input" cols="100" >{{'mainOeuvre.niveauScolaire'|translate}}  </label>
+                <button pButton pRipple (click)="showModalDialog1()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
+                <p-dropdown [autoDisplayFirst]="false" name="ns" [style]="{'width':'100%'}" [(ngModel)]="ouvrier.niveauScolaire" placeholder="{{'mainOeuvre.niveauScolaire'|translate}}..." [options]="niveaux" filter="true">
+                  <ng-template let-item pTemplate="selectedItem">
+                    <span >{{item.label}}</span>
+                  </ng-template>
+                  <ng-template let-item pTemplate="item">
+                    <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                      <div>{{item.label}}</div>     
+                    </div>
+                  </ng-template>
+                </p-dropdown>   
+              </div>
+              <p-dialog header="{{'mainOeuvre.niveauScolaire'|translate}}" [(visible)]="displayModal1" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+                  [draggable]="false" [resizable]="false">
+                  <input type="text" pInputText style="width:100%;" [(ngModel)]="niveau"/>                     
+                      <ng-template pTemplate="footer">
+                      <p-button icon="pi pi-check" (click)="addNiveau()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+                      </ng-template>
+              </p-dialog>
+                   <div class="col-md-6" >   
+                <label for="float-input" cols="100" >{{'mainOeuvre.qualification'|translate}}  </label>
+                <button pButton pRipple (click)="showModalDialog2()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
+                <p-dropdown [autoDisplayFirst]="false" name="qualif" [(ngModel)]="ouvrier.qualification" placeholder="{{'mainOeuvre.qualification'|translate}}..." [style]="{'width':'100%'}"  [options]="qualifications" filter="true">
+                  <ng-template let-item pTemplate="selectedItem">
+                    <span >{{item.label}}</span>
+                  </ng-template>
+                  <ng-template let-item pTemplate="item">
+                    <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                      <div>{{item.label}}</div>     
+                    </div>
+                  </ng-template>
+                </p-dropdown>   
+              </div>
+              <p-dialog header="{{'mainOeuvre.qualification'|translate}}" [(visible)]="displayModal2" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+                  [draggable]="false" [resizable]="false">
+                  <input type="text" pInputText style="width:100%;" [(ngModel)]="qualification"/>                     
+                      <ng-template pTemplate="footer">
+                      <p-button icon="pi pi-check" (click)="addQualification()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+                      </ng-template>
+              </p-dialog>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="p-grid p-nogutter p-justify-end text-center">
+                <p-button label="{{'global.suivant'|translate}}" (onClick)="nextPage()" icon="pi pi-angle-right" iconPos="right"></p-button>
+            </div>
+        </ng-template>
+    </p-card>
+  </div>
+  <div class="stepsdemo-content" *ngIf="page==2">
+    <p-card>
+        <ng-template pTemplate="content">
+          <div class="row">
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.fonction'|translate}} * </label>
+            <button pButton pRipple (click)="showModalDialog4()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
+            <p-dropdown [autoDisplayFirst]="false" name="fct" [(ngModel)]="ouvrier.fonction" [required]="true" #fct="ngModel" placeholder="{{'mainOeuvre.fonction'|translate}}..." [style]="{'width':'100%'}" [options]="fonctions" >
+              <ng-template let-item pTemplate="selectedItem">
+                <span >{{item.label}}</span>
+              </ng-template>
+              <ng-template let-item pTemplate="item">
+                <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                  <div>{{item.label}}</div>     
+                </div>
+              </ng-template>
+            </p-dropdown> 
+            <small *ngIf="(fct.invalid && submitted) || (fct.dirty && fct.invalid)" class="p-error">{{'mainOeuvre.fonction'|translate}} {{'global.obligatoire'|translate}}.</small>     
+          </div>
+          <p-dialog header="{{'mainOeuvre.fonction'|translate}}" [(visible)]="displayModal4" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+          [draggable]="false" [resizable]="false">
+          <input  type="text" pInputText style="width:100%;" [(ngModel)]="fonction"/>                     
+              <ng-template pTemplate="footer">
+              <p-button icon="pi pi-check" (click)="addFonction()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+              </ng-template>
+          </p-dialog>
+          <div class="col-md-6 mb-3" >
+            <label for="float-input" cols="100" >{{'mainOeuvre.categorie'|translate}}  </label>
+            <button pButton pRipple (click)="showModalDialog3()" type="button" icon="pi pi-plus" pTooltip="{{'global.ajouter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-secondary p-mr-2 mr-3 ml-3 plus-option"></button>
+            
+            <p-dropdown [autoDisplayFirst]="false" name="categorie" [(ngModel)]="ouvrier.categorie" placeholder="{{'mainOeuvre.categorie'|translate}}..." [style]="{'width':'100%'}" [options]="categories" filter="true">
+              <ng-template let-item pTemplate="selectedItem">
+                <span >{{item.label}}</span>
+              </ng-template>
+              <ng-template let-item pTemplate="item">
+                <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                  <div>{{item.label}}</div>     
+                </div>
+              </ng-template>
+            </p-dropdown> 
+          </div>
+          <div class="col-md-6 m-2" >
+            <p-checkbox [(ngModel)]="ouvrier.caporal" name="caporal" binary="true" inputId="binary"></p-checkbox>   
+            <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;" >{{'mainOeuvre.caporal'|translate}}</label>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.attache'|translate}}  </label>
+            <p-dropdown [autoDisplayFirst]="false" name="attache" [(ngModel)]="ouvrier.attache" [options]="caporals" placeholder="{{'mainOeuvre.attache'|translate}}..." [style]="{'width':'100%','min-width':'100%'}" filter="true">
+              <ng-template let-item pTemplate="selectedItem">
+                <span >{{item.label}}</span>
+              </ng-template>
+              <ng-template let-caporal pTemplate="item">
+                <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                  <div>{{caporal.label}}</div>     
+                </div>
+              </ng-template>
+            </p-dropdown>
+     
+          </div>
+          <p-dialog header="{{'mainOeuvre.categorie'|translate}}" [(visible)]="displayModal3" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
+              [draggable]="false" [resizable]="false">
+              <input type="text" pInputText style="width:100%;" [(ngModel)]="categorie"/>                     
+                  <ng-template pTemplate="footer">
+                  <p-button icon="pi pi-check" (click)="addCategorie()" label="{{'global.enregistrer'|translate}}" styleClass="p-button-text"></p-button>
+                  </ng-template>
+          </p-dialog>
+  
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.dateEmbauche'|translate}} *  </label>
+            <p-calendar class="date" name="dEmb" [maxDate]="currentDate" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateEmbauche" #dEmb="ngModel" required></p-calendar>
+            <small *ngIf="(dEmb.invalid && submitted) || (dEmb.dirty && dEmb.invalid)" class="p-error">{{'mainOeuvre.dateEmbauche'|translate}} {{'global.obligatoire'|translate}}.</small>     
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.cnss'|translate}}  </label>
+            <p-inputNumber [style]="{'width':'100%'}" name="cnss" [(ngModel)]="ouvrier.cnss"></p-inputNumber>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.anciennete'|translate}} <span *ngIf="ouvrier.cnss">*</span> </label>
+            <p-inputNumber [style]="{'width':'100%'}" name="anc" [(ngModel)]="ouvrier.anciennete" #anc="ngModel" required></p-inputNumber>
+            
+            <small *ngIf="(ouvrier.cnss && anc.invalid && submitted) || (ouvrier.cnss && anc.dirty && anc.invalid)" class="p-error">{{'mainOeuvre.anciennete'|translate}} {{'global.obligatoire'|translate}}.</small>     
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.droitConge'|translate}} * </label>
+            <p-inputNumber  [style]="{'width':'100%'}" name="droitConge" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" [(ngModel)]="ouvrier.droitConge" #droitConge="ngModel" required ></p-inputNumber>
+            <small *ngIf="(droitConge.invalid && submitted) || (droitConge.dirty && droitConge.invalid)" class="p-error">{{'mainOeuvre.droitConge'|translate}} {{'global.obligatoire'|translate}}.</small>     
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.congeInitial'|translate}}</label>
+            <p-inputNumber [style]="{'width':'100%'}" name="congeInitial" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" [(ngModel)]="ouvrier.congeInitial"></p-inputNumber>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.tauxAssurance'|translate}}</label>
+            <p-inputNumber [style]="{'width':'100%'}" name="tAssur" [(ngModel)]="ouvrier.tauxAssurance"></p-inputNumber>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.matriculeAMC'|translate}}</label>
+            <p-inputNumber [style]="{'width':'100%'}" name="matAMC" [(ngModel)]="ouvrier.matriculeAMC"></p-inputNumber>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.optionAMC'|translate}}</label>
+            <p-dropdown [autoDisplayFirst]="false" [options]="amc" [style]="{'width':'100%'}" placeholder="{{'mainOeuvre.optionAMC'|translate}}..." name="optionAMC" [(ngModel)]="ouvrier.optionAMC" filter="true">
+              <ng-template let-item pTemplate="selectedItem">
+                <span >{{item.label}}</span>
+              </ng-template>
+              <ng-template let-item pTemplate="item">
+                <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                  <div>{{item.label}}</div>     
+                </div>
+              </ng-template>
+            </p-dropdown> 
+          </div>
+          <div class="col-md-6 m-2" >   
+            <p>
+              <p-checkbox binary="true"  inputId="binary" name="exercice" [(ngModel)]="ouvrier.exercice"></p-checkbox>
+              <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;">{{'mainOeuvre.exercice'|translate}}</label>  
+            </p>
+            <p>
+              <p-checkbox  binary="true" inputId="binary" name="contractuel" [(ngModel)]="ouvrier.contractuel"></p-checkbox>
+              <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;"  >{{'mainOeuvre.contractuel'|translate}}</label>  
+            </p>
+            <p>
+              <p-checkbox name="formationPhyto" [(ngModel)]="ouvrier.formationPhyto" binary="true"  inputId="binary"></p-checkbox>
+              <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;" >{{'mainOeuvre.fomationPhyto'|translate}}  </label>  
+            </p>
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.obs'|translate}}  </label>
+            <textarea pInputTextarea [style]="{'width':'100%'}" name="obs" [(ngModel)]="ouvrier.observation"></textarea>
+          </div>
+        </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="p-grid p-nogutter p-justify-end text-center">
+              <p-button label="{{'global.precedent'|translate}}" (onClick)="previousPage()" icon="pi pi-angle-left" iconPos="left"></p-button>
+                <p-button label="{{'global.suivant'|translate}}" (onClick)="nextPage()" icon="pi pi-angle-right" iconPos="right"></p-button>
+            </div>
+        </ng-template>
+    </p-card>
+  </div>
+  
+  <div class="stepsdemo-content" *ngIf="page==3">
+    <p-card>
+        <ng-template pTemplate="content">
+          <div class="row">
+          <div class="col-md-6 mb-2" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.salaireBase'|translate}} * </label>
+            <p-inputNumber [style]="{'width':'100%'}" [min]="0" mode="decimal" name="salaireBase" [(ngModel)]="ouvrier.salaireBase" #salaireBase="ngModel" [required]="true" [minFractionDigits]="2" class="p-inputtext-sm right" ></p-inputNumber>
+            <small *ngIf="(salaireBase.invalid && submitted) || (salaireBase.dirty && salaireBase.invalid)" class="p-error">{{'mainOeuvre.salaireBase'|translate}} {{'global.obligatoire'|translate}}.</small>     
+          </div>
+ 
+          <div class="col-md-12" >   
+            <div class="card">
+              <div class="card-body" style="padding: 0 0 0 1rem !important;">
+                <div class="row" style="padding-top: 10px; border-radius:5px; ">
+                  <div class="col-md" style="padding-right: 20px !important;"  [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'mainOeuvre.primes'|translate}}</div>
+                  
+                  <div class="col-md" style="padding-right: 20px !important;" [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'mainOeuvre.montant'|translate}}</div>
+                  <div class="col-md" style="padding-right: 20px !important;" [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">{{'primeng.actions'|translate}}</div>
+                </div>
+                <div class="row" *ngFor="let prime of ouvrier.primes; first as first;last as last;">
+                  <div class="col-md" style="padding-right: 20px !important;" >
+                    <p-dropdown [autoDisplayFirst]="false" [(ngModel)]="prime.prime" [options]="primes" [style]="{'width':'100%','min-width':'100%'}" filter="true">
+                      <ng-template let-item pTemplate="selectedItem">
+                        <span >{{item.label}}</span>
+                      </ng-template>
+                      <ng-template let-caporal pTemplate="item">
+                        <div class="ui-helper-clearfix" style="position: relative;height: 25px;">
+                          <div>{{caporal.label}}</div>     
+                        </div>
+                      </ng-template>
+                    </p-dropdown>
+                    
+                  </div>
+                  <div class="col-md">                    
+                    <p-inputNumber [(ngModel)]="prime.montant" [style]="{'width':'100%'}" [minFractionDigits]="2" mode="decimal" class="p-inputtext-sm"  [min]="0" ></p-inputNumber>
+                  </div>
+                  <div class="col-md" [ngClass]="{'text-right':lang.isAr(),'text-left':!lang.isAr()}">
+                      <button pButton pRipple type="button" icon="pi pi-minus " class="p-button-rounded p-button-warning mr-1" (click)="removeItem(prime)"></button>
+                      <button *ngIf="last" pButton pRipple type="button" icon="pi pi-plus"  (click)="addItem()" class="p-button-rounded p-button-info"></button>  
+                  </div>
+                </div>
+              </div> 
+            </div>
+          </div>
+          
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.unitePaiement'|translate}} * </label>
+            <div class="p-field-radiobutton mb-2" *ngFor="let unite of 'mainOeuvre.unitesPaiement'|translate">
+                <p-radioButton name="unite{{unite.code}}" [(ngModel)]="ouvrier.unitePaiement" value="{{unite.code}}" inputId="unite{{unite.code}}" #unite{{unite.code}}="ngModel" [required]="true"></p-radioButton>
+                <label for="unite{{unite.code}}" style="margin-bottom:1px;margin-left:2px;margin-right:2px;">{{unite.name}}</label>
+              </div>
+
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.modePaiement'|translate}} * </label>
+            <div class="p-field-radiobutton mb-2" *ngFor="let type of 'mainOeuvre.methodePaie'|translate">
+              <p-radioButton name="mode{{type.code}}" value="{{type.code}}" [(ngModel)]="ouvrier.modePaiement" inputId="{{type.code}}" #mode{{type.code}}="ngModel" [required]="true"></p-radioButton>
+              <label for="city1{{type.code}}" style="margin-bottom:0;margin-left:2px;margin-right:2px;">{{type.name}}</label>
+          </div>  
+          
+          </div>
+          <div class="col-md-6 mb-3" >
+            <label for="float-input" cols="100" >{{'mainOeuvre.banque'|translate}}  </label>
+            <p-dropdown name="banques" [options]="banques"  [style]="{'width':'100%'}" placeholder="{{'mainOeuvre.banque'|translate}}..." [(ngModel)]="ouvrier.banque" optionLabel="name" optionDisabled="inactive"></p-dropdown>                                 
+          </div>
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.rib'|translate}}  </label>
+            <input type="text" name="rib" pInputText style="width:100%;" [(ngModel)]="ouvrier.rib"/>                     
+          </div>
+          <div class="col-md-6" >
+            <p-checkbox name="represe"  binary="true" inputId="binary" [(ngModel)]="ouvrier.representeEquipe"></p-checkbox>   
+            <label for="float-input" cols="100" style="margin-bottom:1px;margin-left:2px;margin-right:2px;" >{{'mainOeuvre.representeEquipe'|translate}}</label>
+            <p-inputNumber  [hidden]="!ouvrier.representeEquipe" [style]="{'width':'100%'}" name="repreNumb" [(ngModel)]="ouvrier.representeNombre"></p-inputNumber>
+          </div> 
+          </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="p-grid p-nogutter p-justify-end text-center">
+              <p-button label="{{'global.precedent'|translate}}" (onClick)="previousPage()" icon="pi pi-angle-left" iconPos="left"></p-button>
+                <p-button label="{{'global.suivant'|translate}}" (onClick)="nextPage()" icon="pi pi-angle-right" iconPos="right"></p-button>
+            </div>
+        </ng-template>
+    </p-card>
+  </div>
+  <div class="stepsdemo-content" *ngIf="page==4">
+    <p-card>
+        <ng-template pTemplate="content">
+          <div class="col-md-6" >   
+            <label for="float-input" cols="100" >{{'mainOeuvre.attachement'|translate}} * </label>
+            <div>
+              <div class="p-field-checkbox mb-2" *ngFor="let s of societes">
+                <div class="ml-3">
+                  <p-checkbox name="scte" value="{{s.societe.id}}" [(ngModel)]="checkedSocietes" (onChange)="checkSoc($event,s.societe.id)" inputId="ny"></p-checkbox>
+                  <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{s.societe.name}}</label>
+                </div>
+                <div *ngIf="checkedSocietes.indexOf(s.societe.id.toString())>=0" class="ml-5">
+                    <div class="p-field-checkbox mb-2" *ngFor="let ferme of s.fermes">
+                      <p-checkbox name="frms" checked="true" value="{{ferme.IDFermes}}" [(ngModel)]="ouvrier.fermes" #frms [required]=true inputId="ny" ></p-checkbox>
+                      <label for="ny" style="margin-bottom:0;margin-left:2px;margin-right:2px;" >{{ferme.Nom}}</label>
+                    </div>
+                </div>
+              </div>
+            </div>   
+            <small *ngIf="(ouvrier.fermes.length==0 && submitted)" class="p-error">{{'mainOeuvre.attachement'|translate}} {{'global.obligatoire'|translate}}.</small>                   
+          </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <div class="p-grid p-nogutter p-justify-end text-center">
+              <p-button label="{{'global.precedent'|translate}}" (onClick)="previousPage()" icon="pi pi-angle-left" iconPos="left"></p-button>
+              <button *ngIf="!forEdit && !this.consult" pButton type="button" label="{{'global.enregistrer'|translate}}" (click)="save()" icon="pi pi-check" class="p-button mt-4"></button>
+              <button *ngIf="forEdit  && !this.consult" class="p-button-raised p-button-warning" pButton type="button" label="{{'global.modifier'|translate}}" (click)="update()" icon="pi pi-check"></button>  
+            </div>
+        </ng-template>
+    </p-card>
+  </div>
+  <!--
     <div class="text-right">
       <button type="button" pButton pRipple icon="pi pi-times" (click)="showForm()" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
     </div>
@@ -482,6 +901,7 @@
         </div>
       </p-tabPanel>
   </p-tabView>
+  -->
 </div>
 <div *ngIf="qrCode" >
   <div class="row">

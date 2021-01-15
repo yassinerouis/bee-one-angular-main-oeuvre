@@ -31,6 +31,8 @@ import { MessageService } from 'primeng/api';
 import { QRCodeModule } from 'angular2-qrcode';
 import { PresenceComponent } from './pointage-presense/presence/presence.component';
 import {CardModule} from 'primeng/card';
+import {StepsModule} from 'primeng/steps';
+import {MenuItem} from 'primeng/api';
 
 const routes: Routes = [
   { path: 'ouvriers', component: OuvriersComponent },
@@ -42,6 +44,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     CardModule,
+    StepsModule,
     RouterModule.forChild(routes),
     TableModule,
     CalendarModule,

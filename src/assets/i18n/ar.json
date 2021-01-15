@@ -24,7 +24,10 @@
         "choixMois":"اختيار الشهر",
         "choixAnnee":"اختيار السنة",
         "true":"نعم",
-        "false":"لا"
+        "false":"لا",
+        "suivant":"تابع",
+        "precedent":"راجع",
+        "obligatoire":"مطلوب"
     },
     "primeng": {
         "afficherDeA":"إظهار {first} إلى {last} من {totalRecords} من الإدخالات",

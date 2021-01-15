@@ -24,15 +24,13 @@ export class SqlRequestService {
   getDetailsFilter(filters){
     var filterLike = ''
     if(filters){
-
-    
     Object.keys(filters).forEach(function(key,index) {
       filters[key].forEach(element => {
         if(element.value){
           if(element.matchMode=='startsWith'){
             filterLike+=key +" like '"+element.value+"%' and "
           }
-          if(element.matchMode=='endsWith'){
+          else if(element.matchMode=='endsWith'){
             filterLike+=key +" like '%"+element.value+"' and "
           }
           else if(element.matchMode=='contains'){

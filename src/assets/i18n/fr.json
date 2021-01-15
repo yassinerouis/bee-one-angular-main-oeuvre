@@ -24,7 +24,10 @@
         "choixMois":"Choix du mois",
         "choixAnnee":"Choix de l'année",
         "true":"Oui",
-        "false":"Non"
+        "false":"Non",
+        "suivant":"Suivant",
+        "precedent":"Précédent",
+        "obligatoire":"est obligatoire"
     },
     "primeng": {
         "afficherDeA":"Afficher {first} à {last} de {totalRecords} entrées",

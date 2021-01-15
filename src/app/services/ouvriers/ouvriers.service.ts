@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 })
 export class OuvriersService {
   url = "http://localhost:9010/agridata-lga-backend/api/"
-  constructor(private http:HttpClient) { }
+  constructor(private http:HttpClient){}
   getCaporal(){
     return this.http.get(this.url+"main_oeuvre_ouvriers/getCaporals")
   }
@@ -15,6 +15,9 @@ export class OuvriersService {
   }
   getOuvrier(ID){
     return this.http.get(this.url+"personnel_ouvrier/getOne/"+ID)
+  }
+  getMatricule(Mat){
+    return this.http.get(this.url+"personnel_ouvrier/getWithMatricule/"+Mat)
   }
   getTotalRecords(option1,option2){
     return this.http.post(this.url+"personnel_ouvrier/getLength",{option1:option1,option2:option2})

@@ -27,7 +27,10 @@
         "choixMois":"Choice of mounth",
         "choixAnnee":"Choice of year",
         "true":"True",
-        "false":"false"
+        "false":"false",
+        "suivant":"Next",
+        "precedent":"Previous",
+        "obligatoire":"is required"
     },
     "primeng": {
         "afficherDeA":"Show {first} to {last} of {totalRecords} entries",

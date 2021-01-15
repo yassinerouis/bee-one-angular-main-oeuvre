@@ -1,3 +1,4 @@
+import { MainOeuvreModule } from './../main_oeuvre.module';
 import { SqlRequestService } from './../../sql-request/sql-request.service';
 import { QRCodeModule } from 'angular2-qrcode';
 import { NiveauScolaireService } from './../../services/niveau_scolaire/niveau-scolaire.service';
@@ -19,6 +20,8 @@ import { ExportService } from 'src/app/services/export/export.service';
 import Swal from 'sweetalert2';
 import { DatePipe } from '@angular/common';
 import { ParametrageAmcService } from 'src/app/services/parametrage/parametrage-amc.service';
+import {MenuItem} from 'primeng/api';
+import * as _ from 'lodash';
 
  // Ce Component sert à la gestion de la declaration de la recolte
  am4core.useTheme(am4themes_animated);
@@ -30,7 +33,43 @@ const doc = new jsPDF()
   providers: [MessageService]
 })
 export class OuvriersComponent implements OnInit {
+  page=1
+  nextPage(){
+    if (this.page==1 && this.ouvrier.matricule && this.ouvrier.civilite && this.ouvrier.nom && this.ouvrier.prenom && this.ouvrier.cin && this.ouvrier.situationFamiliale && this.ouvrier.dateNaissance ) {
+      console.log(this.forEdit)
+      console.log(this.consult)
 
+      if(this.forEdit || !this.consult){
+        this.ouvriersService.getMatricule(this.ouvrier.matricule).subscribe(res=>{
+          console.log(res[0])
+          if(res[0].exist>0 && !this.forEdit){
+            Swal.fire({
+              icon: 'error',
+              title: 'Erreur',
+              text:  'Matricule existe dèjà'
+            })
+          }else{
+            this.page++;
+            this.activeIndex++;
+          }
+        })
+      }else{
+        this.page++;
+        this.activeIndex++;
+      }
+    }else if(this.page==2 && this.ouvrier.fonction && this.ouvrier.dateEmbauche && this.ouvrier.droitConge &&((!this.ouvrier.cnss&&this.ouvrier.anciennete)||(this.ouvrier.cnss&&this.ouvrier.anciennete)||(!this.ouvrier.cnss&&!this.ouvrier.anciennete))){
+      this.page++;
+      this.activeIndex++;
+    }else if(this.page==3 && this.ouvrier.salaireBase){
+      this.page++;
+      this.activeIndex++;
+    }
+    this.submitted = true;
+  }
+  previousPage(){
+    this.page--
+    this.activeIndex--
+  }
 qrCode = false
   //declaration des variables 
   ouvrier = {
@@ -166,26 +205,25 @@ qrCode = false
   }
   save(){
     this.getSwalInteractions()
-    console.log(this.ouvrier)
-    /*
-    this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
-      console.log(res)
-      if(res[0].message=="ajout reussi"){
-        Swal.fire(
-          this.swalInteractions.ajout.titre,
-          this.swalInteractions.ajout.description,
-          'success'
-        )
-        this.showForm()
-        this.ngOnInit()
-      }else{
-        Swal.fire({
-          icon: 'error',
-          title: this.swalInteractions.ajout.titreErr,
-          text:  this.swalInteractions.ajout.descriptionErr
-        })
-      }
-    },err=>console.log(err))*/
+    if(this.ouvrier.fermes.length>0){
+      this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
+        console.log((res[0].description.split(" ", 5)==["Violation", "of", "UNIQUE", "KEY", "constraint"]))
+        if(res[0].message=="ajout reussi"){
+          Swal.fire(
+            this.swalInteractions.ajout.titre,
+            this.swalInteractions.ajout.description,
+            'success')
+          this.showForm()
+          this.ngOnInit()
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: this.swalInteractions.ajout.titreErr,
+            text:  this.swalInteractions.ajout.descriptionErr
+          })
+        }
+      },err=>console.log(err))
+    }
   }
 
 @Input() get selectedColumns(): any[] {
@@ -269,8 +307,9 @@ checkSoc(e,s){
     })
   }
 }
+items: MenuItem[];
+
 loadOuvriers(event){
-  console.log(this.sqlService.getDetailsFilter(event.filters))
   if(event.filters && this.sqlService.getDetailsFilter(event.filters)!=''){
     this.filter.option2=this.sqlService.getDetailsFilter(event.filters)
   }else{
@@ -486,8 +525,8 @@ getParametrageAMC(){
   })
 }
 getSocietes(){
+  this.societes=[]
   this.sfService.getSocietes().subscribe(societes=>{
-    console.log(societes)
     for(var i=0;i<societes['length'];i++){
       let societe={id:societes[i].ID,name:societes[i].Rais_Social}
       this.sfService.getFermesSociete(societes[i].ID).subscribe(fermes=>{
@@ -520,11 +559,39 @@ getParams(){
 }
 filter = {from:0,to:10,option1:'',option2:''}
 totalRecords
+activeIndex=0
+submitted=false
   ngOnInit() {
+
     this.translateService.get(['mainOeuvre']).subscribe(mo=>{
       this.civilites = mo.mainOeuvre.civilites
       this.situations = mo.mainOeuvre.situations
       this.typePaie=mo.mainOeuvre.methodePaie[0].name
+      this.items = [{
+        label: mo.mainOeuvre.etatcivil,
+        command: (event: any) => {
+            this.activeIndex = 0;
+        }
+    },
+    {
+      label: mo.mainOeuvre.fonction,
+      command: (event: any) => {
+            this.activeIndex = 1;
+        }
+    },
+    {
+      label: mo.mainOeuvre.paie.name,
+        command: (event: any) => {
+            this.activeIndex = 2;
+        }
+    },
+    {
+        label: mo.mainOeuvre.attachement,
+        command: (event: any) => {
+            this.activeIndex = 3;
+        }
+    }
+  ];
     })
    var lazyEvent:LazyLoadEvent
    this.loadOuvriers(lazyEvent)
@@ -616,6 +683,7 @@ totalRecords
   edit(id){
   this.ouvrier.id=id
    this.ouvriersService.getPrimes(id).subscribe(primes=>{
+     console.log(primes)
     for(var i=0;i<primes['length'];i++){
       this.ouvrier.primes[i]={
         id:i+1,
@@ -623,10 +691,9 @@ totalRecords
         montant:primes[i].Montant
       }
     }
+   console.log(this.ouvrier.primes) 
   })
     this.ouvriersService.getOuvrier(id).subscribe(ouvrier=>{
-      console.log(id)
-      console.log(ouvrier)
         this.ouvrier.matricule=ouvrier[0].Mat,
         this.ouvrier.codeBarre=ouvrier[0].BarcodesId,
         this.ouvrier.civilite=ouvrier[0].Civilite,
@@ -646,8 +713,8 @@ totalRecords
         this.ouvrier.attache=ouvrier[0].Pers_Cap,
         this.ouvrier.categorie=ouvrier[0].Categorie,
         this.ouvrier.dateEmbauche=new Date(ouvrier[0].Date_Embauche),
-        this.ouvrier.cnss=ouvrier[0].CNSS,
-        this.ouvrier.anciennete=ouvrier[0].Pers_Ancte,
+        this.ouvrier.cnss=(ouvrier[0].CNSS==0)?null:ouvrier[0].CNSS,
+        this.ouvrier.anciennete=(ouvrier[0].Pers_Ancte==0)?null:ouvrier[0].Pers_Ancte,
         this.ouvrier.droitConge=ouvrier[0].Droit_conge,
         this.ouvrier.tauxAssurance=ouvrier[0].Taux_assurance,
         this.ouvrier.matriculeAMC=ouvrier[0].AMC,
@@ -662,6 +729,7 @@ totalRecords
         this.ouvrier.representeNombre=ouvrier[0].NBRE,
         this.ouvrier.modePaiement=ouvrier[0].Mode_reglement,
         this.ouvrier.rib=ouvrier[0].Banque_Compte
+        this.page=1
     })
     this.checkedSocietes=[]
     this.ouvrier.fermes=[]
@@ -669,19 +737,37 @@ totalRecords
       for(var i=0;i<res['length'];i++){
         this.ouvrier.fermes.push(res[i].IDFermes.toString())
       }
-      console.log(this.ouvrier.fermes)
     })
     this.ouvriersService.getSocietes(id).subscribe(res=>{
+      console.log(res)
       for(var i=0;i<res['length'];i++){
         this.checkedSocietes.push(res[i].ID_societe.toString())
       }
       console.log(this.checkedSocietes)
     })
-    setTimeout(()=>{                           //<<<---using ()=> syntax
-      this.showForm()
+    setTimeout(()=>{    
+      this.forEdit = true
+      this.form=!this.form
+      if(this.form==true){
+        this.submitted=false
+        this.getPrimes()
+        this.getCaporals()
+        this.getParametrageAMC()
+        this.getSocietes()
+        this.getParams()
+      }
+      this.ouvrier.dateEmbauche=new Date()
+      if(!this.forEdit){
+        this.ouvrier.primes=[{
+          id:1,
+          prime:null,
+          montant:null
+        }]
+        this.checkedSocietes=[]
+      }
       this.id = id
       console.log(this.ouvrier)
-      this.forEdit = true
+      console.log(this.ouvrier.primes)
     }, 1000);
   }
 
@@ -894,6 +980,7 @@ totalRecords
   showForm(){
     this.form=!this.form
     if(this.form==true){
+      this.submitted=false
       this.getPrimes()
       this.getCaporals()
       this.getParametrageAMC()
@@ -901,14 +988,16 @@ totalRecords
       this.getParams()
     }
     this.ouvrier.dateEmbauche=new Date()
-    this.ouvrier.primes=[{
-      id:1,
-      prime:null,
-      montant:null
-    }]
+    if(!this.forEdit){
+      this.ouvrier.primes=[{
+        id:1,
+        prime:null,
+        montant:null
+      }]
+      this.checkedSocietes=[]
+    }
     this.forEdit = false
     this.consult=false
-    this.checkedSocietes=[]
   }
   generateCodes(){
       this.getSwalInteractions()
