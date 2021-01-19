@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class SocieteFermeService {
-  url = "http://localhost:9010/agridata-lga-backend/api/"
+  url = "http://agridata.hopto.org:9010/agridata-lga-backend/api/"
   constructor(private http:HttpClient) { }
   getSocietes(){
     return this.http.get(this.url+"get_societe")

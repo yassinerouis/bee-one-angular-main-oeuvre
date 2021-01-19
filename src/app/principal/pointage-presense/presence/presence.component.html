@@ -48,7 +48,7 @@
               </div>
             </ng-template>
           </p-multiSelect>
-            <button *ngIf="selectedOuvriers.length>0" (onChange)="showSelected()" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
+            <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
             <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'mainOeuvre.codeBarre'|translate}}({{selectedOuvriers.length}})" icon="pi pi-print" class="p-button-success ml-1 mr-1" (click)="generateCodes()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
           </div>
         </ng-template>
@@ -113,11 +113,11 @@
       </div>
       <div class="col-md-12 mb-3" >
         <label for="float-input" cols="100" >{{'mainOeuvre.entreeSortie'|translate}} * </label>
-        <p-dropdown [options]="'mainOeuvre.entresSortie'|translate" [(ngModel)]="selectedCity" [style]="{'width':'100%','min-width':'100%'}" optionLabel="name"></p-dropdown>
+        <p-dropdown [options]="'mainOeuvre.entresSortie'|translate" [style]="{'width':'100%','min-width':'100%'}" optionLabel="name"></p-dropdown>
       </div>
       <div class="col-md-12 mb-3" >
         <label for="float-input">{{'mainOeuvre.date'|translate}}/{{'mainOeuvre.heure'|translate}}*</label>
-        <p-calendar class="date" [maxDate]="currentDate" name="dn" [style]="{'width': '100%'}" showTime="true" hourFormat="24" [(ngModel)]="ouvrier.dateNaissance" #dn="ngModel" required></p-calendar>
+        <p-calendar class="date" name="dn" [style]="{'width': '100%'}" showTime="true" hourFormat="24" [(ngModel)]="ouvrier.dateNaissance" #dn="ngModel" required></p-calendar>
       </div>
       <div class="col-md-12" >   
         <label for="float-input" cols="100" >{{'mainOeuvre.filtreCaporal'|translate}}  </label>

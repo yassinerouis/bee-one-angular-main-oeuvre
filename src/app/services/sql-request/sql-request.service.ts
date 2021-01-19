@@ -39,9 +39,14 @@ export class SqlRequestService {
              filterLike+=key +" not like '%"+element.value+"%' and "
            }else if(element.matchMode=='equals'){
              filterLike+=key +" like '"+element.value+"' and "
-           }else if(element.matchMode=='notEquals'){
+           }else if(element.matchMode=='notEquals'||element.matchMode=='isNot'){
              filterLike+=key +" not like '"+element.value+"' and "
            }
+           else if(element.matchMode=='before'){
+            filterLike+=key +" < '"+element.value+"' and "
+          }else if(element.matchMode=='after'){
+            filterLike+=key +" > '"+element.value+"' and "
+          }
         }
       });
   });

@@ -108,6 +108,7 @@
         "matricule":"رقم التسجيل",
         "codeBarre":"الرمز الشريطي",
         "entreeSortie":"الإدخال / الإخراج",
+        "carteIdentification":"بطاقة الهوية",
         "entresSortie":[{"code":1,"name":"الإدخال"},{"code":2,"name":"الإخراج"}],
         "date":"التاريخ",
         "heure":"الساعة",

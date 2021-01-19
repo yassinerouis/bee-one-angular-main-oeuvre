@@ -10,7 +10,10 @@ export class SidebarComponent implements OnInit {
   public recolteCollapsed = false;
   public estimationCollapsed = false;
   constructor() { }
-
+  public link1 = false;
+  public link2 = false;
+  public link3 = false;
+  public link4 = false;
   ngOnInit() {
     const body = document.querySelector('body');
 

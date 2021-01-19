@@ -1,10 +1,8 @@
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { OuvriersComponent } from './../../principal/ouvriers/ouvriers.component';
 import { Component, Inject, OnInit } from '@angular/core';
 import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
 import { LanguageService } from 'src/app/services/language/language.service';
-import { Route } from '@angular/compiler/src/core';
 import { DOCUMENT } from '@angular/common';
 
 @Component({
@@ -19,7 +17,7 @@ export class NavbarComponent implements OnInit {
   lang
   clickItem1(){console.log("hahahaha")}
   items = []
-  constructor(@Inject(DOCUMENT) private document: Document,config: NgbDropdownConfig,private route:Router,private languageservice:LanguageService,private translateService:TranslateService) {
+  constructor(config: NgbDropdownConfig,private route:Router,private languageservice:LanguageService,private translateService:TranslateService) {
     config.placement = 'bottom-right';
   }
   ngOnInit(){

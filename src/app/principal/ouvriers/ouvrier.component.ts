@@ -1,13 +1,13 @@
-import { MainOeuvreModule } from './../main_oeuvre.module';
-import { SqlRequestService } from './../../sql-request/sql-request.service';
+import { MainOeuvreModule } from '../main_oeuvre.module';
+import { SqlRequestService } from '../../services/sql-request/sql-request.service';
 import { QRCodeModule } from 'angular2-qrcode';
-import { NiveauScolaireService } from './../../services/niveau_scolaire/niveau-scolaire.service';
-import { QualificationPersonnelService } from './../../services/qualification_personnel/qualification-personnel.service';
-import { FonctionPersonnelService } from './../../services/fonction_personnel/fonction-personnel.service';
-import { CategoriePersonnelService } from './../../services/categorie_personnel/categorie-personnel.service';
-import { PrimesService } from './../../services/primes/primes.service';
-import { SocieteFermeService } from './../../services/societesFermes/societe-ferme.service';
-import { OuvriersService } from './../../services/ouvriers/ouvriers.service';
+import { NiveauScolaireService } from '../../services/niveau_scolaire/niveau-scolaire.service';
+import { QualificationPersonnelService } from '../../services/qualification_personnel/qualification-personnel.service';
+import { FonctionPersonnelService } from '../../services/fonction_personnel/fonction-personnel.service';
+import { CategoriePersonnelService } from '../../services/categorie_personnel/categorie-personnel.service';
+import { PrimesService } from '../../services/primes/primes.service';
+import { SocieteFermeService } from '../../services/societesFermes/societe-ferme.service';
+import { OuvriersService } from '../../services/ouvriers/ouvriers.service';
 import { LanguageService } from 'src/app/services/language/language.service';
 import { TranslateService } from '@ngx-translate/core';
 import * as am4core from "@amcharts/amcharts4/core";
@@ -28,17 +28,15 @@ import * as _ from 'lodash';
 const doc = new jsPDF()
 @Component({
   selector: 'app-ouvrier',
-  templateUrl: './ouvriers.component.html',
-  styleUrls: ['./ouvriers.component.scss'],
+  templateUrl: './ouvrier.component.html',
+  styleUrls: ['./ouvrier.component.scss'],
   providers: [MessageService]
 })
-export class OuvriersComponent implements OnInit {
+export class OuvrierComponent implements OnInit {
   page=1
   nextPage(){
     if (this.page==1 && this.ouvrier.matricule && this.ouvrier.civilite && this.ouvrier.nom && this.ouvrier.prenom && this.ouvrier.cin && this.ouvrier.situationFamiliale && this.ouvrier.dateNaissance ) {
-      console.log(this.forEdit)
-      console.log(this.consult)
-
+      this.step1=true
       if(this.forEdit || !this.consult){
         this.ouvriersService.getMatricule(this.ouvrier.matricule).subscribe(res=>{
           console.log(res[0])
@@ -57,12 +55,18 @@ export class OuvriersComponent implements OnInit {
         this.page++;
         this.activeIndex++;
       }
-    }else if(this.page==2 && this.ouvrier.fonction && this.ouvrier.dateEmbauche && this.ouvrier.droitConge &&((!this.ouvrier.cnss&&this.ouvrier.anciennete)||(this.ouvrier.cnss&&this.ouvrier.anciennete)||(!this.ouvrier.cnss&&!this.ouvrier.anciennete))){
-      this.page++;
-      this.activeIndex++;
-    }else if(this.page==3 && this.ouvrier.salaireBase){
-      this.page++;
-      this.activeIndex++;
+    }else if(this.page==2){
+      if(this.ouvrier.fonction && this.ouvrier.dateEmbauche && this.ouvrier.droitConge &&((!this.ouvrier.cnss&&this.ouvrier.anciennete)||(this.ouvrier.cnss&&this.ouvrier.anciennete)||(!this.ouvrier.cnss&&!this.ouvrier.anciennete))){
+        this.page++;
+        this.activeIndex++;
+      }
+      this.step2=true
+    }else if(this.page==3){
+      if(this.ouvrier.salaireBase){
+        this.page++;
+        this.activeIndex++;
+      }
+      this.step3=true
     }
     this.submitted = true;
   }
@@ -204,6 +208,7 @@ qrCode = false
     }
   }
   save(){
+    this.step4=true
     this.getSwalInteractions()
     if(this.ouvrier.fermes.length>0){
       this.ouvriersService.addOuvrier(this.ouvrier).subscribe(res=>{
@@ -310,6 +315,7 @@ checkSoc(e,s){
 items: MenuItem[];
 
 loadOuvriers(event){
+  console.log(event.filters)
   if(event.filters && this.sqlService.getDetailsFilter(event.filters)!=''){
     this.filter.option2=this.sqlService.getDetailsFilter(event.filters)
   }else{
@@ -495,6 +501,8 @@ getOuvriers(){
   this.ouvriersService.getOuvriers(this.filter).subscribe(ouvriers=>{
     this.ouvriers=ouvriers
     this.loading = false
+  },err=>{
+    console.error(err)
   })
 }
 getLength(){
@@ -561,6 +569,10 @@ filter = {from:0,to:10,option1:'',option2:''}
 totalRecords
 activeIndex=0
 submitted=false
+step1=true;
+step2=false;
+step3=false;
+step4=false;
   ngOnInit() {
 
     this.translateService.get(['mainOeuvre']).subscribe(mo=>{
@@ -749,6 +761,8 @@ submitted=false
       this.forEdit = true
       this.form=!this.form
       if(this.form==true){
+        this.step1=true
+        this.step2=this.step3=this.step4=false
         this.submitted=false
         this.getPrimes()
         this.getCaporals()
@@ -980,6 +994,8 @@ submitted=false
   showForm(){
     this.form=!this.form
     if(this.form==true){
+      this.step1=true
+      this.step2=this.step3=this.step4=false
       this.submitted=false
       this.getPrimes()
       this.getCaporals()

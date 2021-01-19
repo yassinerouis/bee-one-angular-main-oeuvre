@@ -121,6 +121,7 @@
         "entresSortie":[{"code": 1, "name": "Input"}, {"code": 2, "name": "Output"}],
         "date":"Date",
         "heure":"Hour",
+        "carteIdentification":"Identification card",
         "filtreCaporal":"Corporal filter",
         "tableauOuvriers":"Workers table",
         "situationFamiliale":"Family situation ",

@@ -1,4 +1,5 @@
-import { OuvriersComponent } from './ouvriers/ouvriers.component';
+import { Error404Component } from './../error-pages/error404/error404.component';
+import { OuvrierComponent } from './ouvriers/ouvrier.component';
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
@@ -19,7 +20,7 @@ import {TooltipModule} from 'primeng/tooltip';
 import {InputTextareaModule} from 'primeng/inputtextarea';
 import {InputNumberModule} from 'primeng/inputnumber';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService, TranslateLoader } from '@ngx-translate/core';
 import {MessagesModule} from 'primeng/messages';
 import {MessageModule} from 'primeng/message';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
@@ -32,15 +33,16 @@ import { QRCodeModule } from 'angular2-qrcode';
 import { PresenceComponent } from './pointage-presense/presence/presence.component';
 import {CardModule} from 'primeng/card';
 import {StepsModule} from 'primeng/steps';
-import {MenuItem} from 'primeng/api';
+import { HttpLoaderFactory } from '../app.module';
 
 const routes: Routes = [
-  { path: 'ouvriers', component: OuvriersComponent },
-  { path: 'presence', component: PresenceComponent }
+  { path: 'ouvriers', component: OuvrierComponent },
+  { path: 'presence', component: PresenceComponent },
+  { path: '**', component: Error404Component }
 ]
 
 @NgModule({
-  declarations: [OuvriersComponent, PresenceComponent],
+  declarations: [OuvrierComponent, PresenceComponent],
   imports: [
     CommonModule,
     CardModule,
@@ -70,6 +72,13 @@ const routes: Routes = [
     MessageModule,
     CheckboxModule,
     MessagesModule,
+    TranslateModule.forChild({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    }),
   ],
   providers: [DatePipe,CookieService,MessageService],
   exports:[TranslateModule]

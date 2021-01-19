@@ -1,0 +1,7 @@
+{
+    "/api/*": {
+        "target": "http://agridata.hopto.org:9010/agridata-lga-backend/api",
+        "secure": false,
+        "logLevel": "debug"
+    }
+}

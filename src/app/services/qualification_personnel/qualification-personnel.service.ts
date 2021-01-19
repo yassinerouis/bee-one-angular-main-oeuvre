@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 export class QualificationPersonnelService {
 
  
-  url = "http://localhost:9010/agridata-lga-backend/api/"
+  url = "http://agridata.hopto.org:9010/agridata-lga-backend/api/"
   constructor(private http:HttpClient) { }
 
   getAll(){

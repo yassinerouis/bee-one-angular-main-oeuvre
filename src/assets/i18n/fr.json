@@ -112,7 +112,7 @@
         "nom":"Nom",
         "prenom":"Prénom",
         "CIN":"CIN",
-
+        "carteIdentification":"Carte d'identification",
         "dateNaissance":"Date de naissance",
         "situationFamiliale":"Situation familiale",
         "situations":[{"label": "Célibataire", "value": 1},

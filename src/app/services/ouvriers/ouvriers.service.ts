@@ -5,8 +5,11 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class OuvriersService {
-  url = "http://localhost:9010/agridata-lga-backend/api/"
-  constructor(private http:HttpClient){}
+  url = "//agridata.hopto.org:9010/agridata-lga-backend/api/"
+  
+  constructor(private http:HttpClient){
+    console.log(this.url)
+  }
   getCaporal(){
     return this.http.get(this.url+"main_oeuvre_ouvriers/getCaporals")
   }

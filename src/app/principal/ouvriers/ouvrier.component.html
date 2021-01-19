@@ -16,10 +16,10 @@
       <button pButton pRipple type="button" (click)="printPdf()" icon="pi pi-print" pTooltip="{{'global.imprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
     </div>
   </div>
-  <div class="row">
-    <p-table #dt [value]="loadedOuvriers" [lazy]="true" (onLazyLoad)="loadOuvriers($event)"  [scrollable]="true" [style]="{width:'90rem'}" [columns]="selectedColumns" [totalRecords]="totalRecords" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+  <div class="row" style="position:relative; height: 50rem;">
+    <p-table #dt [value]="loadedOuvriers" [lazy]="true" (onLazyLoad)="loadOuvriers($event)"  [scrollable]="true" [columns]="selectedColumns" [totalRecords]="totalRecords" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
       [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
-      [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
+      [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}" [style]="{'position':'absolute','width':'100%'}"
       [globalFilterFields]="fields">
       <ng-template pTemplate="colgroup" let-columns>
         <colgroup>
@@ -48,7 +48,7 @@
             </div>
           </ng-template>
         </p-multiSelect>
-          <button *ngIf="selectedOuvriers.length>0" (onChange)="showSelected()" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
+          <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
           <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'mainOeuvre.codeBarre'|translate}}({{selectedOuvriers.length}})" icon="pi pi-print" class="p-button-success ml-1 mr-1" (click)="generateCodes()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
         </div>
       </ng-template>
@@ -144,9 +144,9 @@
         <ng-template pTemplate="content">
             <div class="p-fluid row">
               <div class="col-md-6 mb-3" >
-                <label for="float-input" cols="100" >{{'mainOeuvre.matricule'|translate}} * </label>
+                <label for="float-input" cols="100" >{{'mainOeuvre.matricule'|translate}} *</label>
                 <input type="text" pInputText style="width:100%;" name="mat" [(ngModel)]="ouvrier.matricule" #mat="ngModel" required />                     
-                <small *ngIf="(mat.invalid && submitted) || (mat.dirty && mat.invalid)" class="p-error">{{'mainOeuvre.matricule'|translate}} {{'global.obligatoire'|translate}}.</small>
+                <small *ngIf="(mat.invalid && submitted && step1) || (mat.dirty && mat.invalid)" class="p-error">{{'mainOeuvre.matricule'|translate}} {{'global.obligatoire'|translate}}.</small>
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.civilite'|translate}} *</label>
@@ -160,12 +160,12 @@
                     </div>
                   </ng-template>
                 </p-dropdown> 
-                <small *ngIf="(civilite.invalid && submitted) || (civilite.dirty && civilite.invalid)" class="p-error">{{'mainOeuvre.civilite'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <small *ngIf="(civilite.invalid && submitted && step1) || (civilite.dirty && civilite.invalid)" class="p-error">{{'mainOeuvre.civilite'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.CIN'|translate}} *</label>
                 <input type="text" pInputText style="width:100%;" name="cin" [(ngModel)]="ouvrier.cin" #cin="ngModel" required/>                     
-                <small *ngIf="(cin.invalid && submitted) || (cin.dirty && cin.invalid)" class="p-error">{{'mainOeuvre.CIN'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <small *ngIf="(cin.invalid && submitted && step1) || (cin.dirty && cin.invalid)" class="p-error">{{'mainOeuvre.CIN'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.codeBarre'|translate}}</label>
@@ -174,17 +174,17 @@
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.nom'|translate}} * </label>
                 <input type="text" pInputText style="width:100%;" name="nom" [(ngModel)]="ouvrier.nom"  #nom="ngModel" required/>                     
-                <small *ngIf="(nom.invalid && submitted) || (nom.dirty && nom.invalid)" class="p-error">{{'mainOeuvre.nom'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <small *ngIf="(nom.invalid && submitted && step1) || (nom.dirty && nom.invalid)" class="p-error">{{'mainOeuvre.nom'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.prenom'|translate}} * </label>
                 <input type="text" pInputText style="width:100%;" name="prenom" [(ngModel)]="ouvrier.prenom"  #prenom="ngModel" required/>                     
-                <small *ngIf="(prenom.invalid && submitted) || (prenom.dirty && prenom.invalid)" class="p-error">{{'mainOeuvre.prenom'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <small *ngIf="(prenom.invalid && submitted && step1) || (prenom.dirty && prenom.invalid)" class="p-error">{{'mainOeuvre.prenom'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input">{{'mainOeuvre.dateNaissance'|translate}} *</label>
-                <p-calendar class="date" [maxDate]="currentDate" name="dn" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateNaissance" #dn="ngModel" required></p-calendar>
-                <small *ngIf="(dn.invalid && submitted) || (dn.dirty && dn.invalid)" class="p-error">{{'mainOeuvre.dateNaissance'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <p-calendar class="date" name="dn" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateNaissance" #dn="ngModel" required></p-calendar>
+                <small *ngIf="(dn.invalid && submitted && step1) || (dn.dirty && dn.invalid)" class="p-error">{{'mainOeuvre.dateNaissance'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 
@@ -199,7 +199,7 @@
                     </div>
                   </ng-template>
                 </p-dropdown>   
-                <small *ngIf="(sf.invalid && submitted) || (sf.dirty && sf.invalid)" class="p-error">{{'mainOeuvre.situationFamiliale'|translate}} {{'global.obligatoire'|translate}}.</small>     
+                <small *ngIf="(sf.invalid && submitted && step1) || (sf.dirty && sf.invalid)" class="p-error">{{'mainOeuvre.situationFamiliale'|translate}} {{'global.obligatoire'|translate}}.</small>     
               </div>
               <div class="col-md-6 mb-3" >
                 <label for="float-input" cols="100" >{{'mainOeuvre.nombreEnfants'|translate}}  </label>
@@ -286,7 +286,7 @@
                 </div>
               </ng-template>
             </p-dropdown> 
-            <small *ngIf="(fct.invalid && submitted) || (fct.dirty && fct.invalid)" class="p-error">{{'mainOeuvre.fonction'|translate}} {{'global.obligatoire'|translate}}.</small>     
+            <small *ngIf="(fct.invalid && submitted && step2) || (fct.dirty && fct.invalid)" class="p-error">{{'mainOeuvre.fonction'|translate}} {{'global.obligatoire'|translate}}.</small>     
           </div>
           <p-dialog header="{{'mainOeuvre.fonction'|translate}}" [(visible)]="displayModal4" [modal]="true" [style]="{width: '50vw'}" [baseZIndex]="10000"
           [draggable]="false" [resizable]="false">
@@ -338,8 +338,8 @@
   
           <div class="col-md-6" >   
             <label for="float-input" cols="100" >{{'mainOeuvre.dateEmbauche'|translate}} *  </label>
-            <p-calendar class="date" name="dEmb" [maxDate]="currentDate" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateEmbauche" #dEmb="ngModel" required></p-calendar>
-            <small *ngIf="(dEmb.invalid && submitted) || (dEmb.dirty && dEmb.invalid)" class="p-error">{{'mainOeuvre.dateEmbauche'|translate}} {{'global.obligatoire'|translate}}.</small>     
+            <p-calendar class="date" name="dEmb" [style]="{'width': '100%'}" [(ngModel)]="ouvrier.dateEmbauche" #dEmb="ngModel" required></p-calendar>
+            <small *ngIf="(dEmb.invalid && submitted && step2) || (dEmb.dirty && dEmb.invalid)" class="p-error">{{'mainOeuvre.dateEmbauche'|translate}} {{'global.obligatoire'|translate}}.</small>     
           </div>
           <div class="col-md-6" >   
             <label for="float-input" cols="100" >{{'mainOeuvre.cnss'|translate}}  </label>
@@ -349,12 +349,12 @@
             <label for="float-input" cols="100" >{{'mainOeuvre.anciennete'|translate}} <span *ngIf="ouvrier.cnss">*</span> </label>
             <p-inputNumber [style]="{'width':'100%'}" name="anc" [(ngModel)]="ouvrier.anciennete" #anc="ngModel" required></p-inputNumber>
             
-            <small *ngIf="(ouvrier.cnss && anc.invalid && submitted) || (ouvrier.cnss && anc.dirty && anc.invalid)" class="p-error">{{'mainOeuvre.anciennete'|translate}} {{'global.obligatoire'|translate}}.</small>     
+            <small *ngIf="(ouvrier.cnss && anc.invalid && submitted && step2) || (ouvrier.cnss && anc.dirty && anc.invalid)" class="p-error">{{'mainOeuvre.anciennete'|translate}} {{'global.obligatoire'|translate}}.</small>     
           </div>
           <div class="col-md-6" >   
             <label for="float-input" cols="100" >{{'mainOeuvre.droitConge'|translate}} * </label>
             <p-inputNumber  [style]="{'width':'100%'}" name="droitConge" [min]="0" mode="decimal" [minFractionDigits]="2" class="p-inputtext-sm right" [(ngModel)]="ouvrier.droitConge" #droitConge="ngModel" required ></p-inputNumber>
-            <small *ngIf="(droitConge.invalid && submitted) || (droitConge.dirty && droitConge.invalid)" class="p-error">{{'mainOeuvre.droitConge'|translate}} {{'global.obligatoire'|translate}}.</small>     
+            <small *ngIf="(droitConge.invalid && submitted && step2) || (droitConge.dirty && droitConge.invalid)" class="p-error">{{'mainOeuvre.droitConge'|translate}} {{'global.obligatoire'|translate}}.</small>     
           </div>
           <div class="col-md-6" >   
             <label for="float-input" cols="100" >{{'mainOeuvre.congeInitial'|translate}}</label>
@@ -417,7 +417,7 @@
           <div class="col-md-6 mb-2" >   
             <label for="float-input" cols="100" >{{'mainOeuvre.salaireBase'|translate}} * </label>
             <p-inputNumber [style]="{'width':'100%'}" [min]="0" mode="decimal" name="salaireBase" [(ngModel)]="ouvrier.salaireBase" #salaireBase="ngModel" [required]="true" [minFractionDigits]="2" class="p-inputtext-sm right" ></p-inputNumber>
-            <small *ngIf="(salaireBase.invalid && submitted) || (salaireBase.dirty && salaireBase.invalid)" class="p-error">{{'mainOeuvre.salaireBase'|translate}} {{'global.obligatoire'|translate}}.</small>     
+            <small *ngIf="(salaireBase.invalid && submitted && step3) || (salaireBase.dirty && salaireBase.invalid)" class="p-error">{{'mainOeuvre.salaireBase'|translate}} {{'global.obligatoire'|translate}}.</small>     
           </div>
  
           <div class="col-md-12" >   
@@ -512,8 +512,8 @@
                     </div>
                 </div>
               </div>
-            </div>   
-            <small *ngIf="(ouvrier.fermes.length==0 && submitted)" class="p-error">{{'mainOeuvre.attachement'|translate}} {{'global.obligatoire'|translate}}.</small>                   
+            </div> 
+            <small *ngIf="(ouvrier.fermes.length==0 && step4 && submitted)" class="p-error">{{'mainOeuvre.attachement'|translate}} {{'global.obligatoire'|translate}}.</small>                   
           </div>
         </ng-template>
         <ng-template pTemplate="footer">
@@ -905,13 +905,13 @@
 </div>
 <div *ngIf="qrCode" >
   <div class="row">
-    <div class="col-md-10">
+    <div class="col-md-9">
       <h5 class="mb-4">{{ 'mainOeuvre.codeBarre' | translate }}</h5>
     </div>
-    <div class="col-md-1">  
-      <button pButton pRipple type="button" (click)="generateQR()" icon="pi pi-file-pdf" label="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
+    <div class="col-md-2">  
+      <button pButton pRipple type="button" (click)="generateQR()" icon="pi pi-file-pdf" pTooltip="{{'global.pdf'|translate}}" tooltipPosition="bottom" label="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
     </div>
-    <div class="col-md-1">
+    <div class="col-md-1 text-right">
       <button type="button" pButton pRipple icon="pi pi-times" (click)="selectedOuvriers=[];qrData=[];qrCode=!qrCode" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
     </div>
   </div>
@@ -921,7 +921,7 @@
   <div *ngFor="let data of qrData; index as i;" class="col-md-6 mt-2 mb-2">
     <p-card>
       <div class="row mb-4">
-        <div class="col-md-6">Carte d'identification</div>
+        <div class="col-md-6">{{'mainOeuvre.carteIdentification'|translate}}</div>
         <div class="col-md-6">{{ selectedOuvriers[i].Mat }}</div>
       </div>
       <div class="row">

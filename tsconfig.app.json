@@ -4,9 +4,8 @@
     "outDir": "./out-tsc/app",
     "types": []
   },
-  "angularCompilerOptions": {
-    "preserveWhitespaces": true //Not working in angular 8.1.1
-  },
+  "emitDecoratorMetadata": true,
+  "experimentalDecorators": true,
   "include": [
     "src/**/*.ts"
   ],
