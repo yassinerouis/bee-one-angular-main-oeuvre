@@ -1,3 +1,5 @@
+import { SqlRequestService } from './../../../services/sql-request/sql-request.service';
+import { LazyLoadEvent } from 'primeng/api';
 import { PresenceService } from './../../../services/pointage-presence/presence.service';
 import { OuvriersService } from './../../../services/ouvriers/ouvriers.service';
 
@@ -22,8 +24,6 @@ const doc = new jsPDF()
   styleUrls: ['./presence.component.scss']
 })
 export class PresenceComponent implements OnInit {
-
-
 qrCode = false
   //declaration des variables 
   ouvrier = {
@@ -90,13 +90,13 @@ qrCode = false
   _selectedColumns:any
   transform = true
   transformDetails = true
-  selectedOuvriers=[]
+  selectedPresences=[]
   
   qrData = []
   
   constructor(public datepipe: DatePipe,private translateService: TranslateService,private exportService:ExportService,
     public lang:LanguageService,private parametrageAMC:ParametrageAmcService,private ouvriersService:OuvriersService,
-    private presenceService:PresenceService) {
+    private presenceService:PresenceService,private sqlService: SqlRequestService) {
   }
 
   //pour créer une nouvelle déclaration de la récolte
@@ -205,6 +205,7 @@ transformDate(ouvriers){
   }
   return ouvriersWithTransformedDate;
 }
+
 transformDateDetails(declarations){
   let declarationsWithTransformedDate = declarations
   if(this.transformDetails){
@@ -218,6 +219,7 @@ transformDateDetails(declarations){
   }
   return declarationsWithTransformedDate
 }
+
 ids
 data = [];
 swalInteractions:any
@@ -270,27 +272,71 @@ showModalDialog3() {
 showModalDialog4() {
   this.displayModal4 = true;
 }
+filter = {from:0,to:10,option1:'',option2:''}
 ouvriers:any
 amc=[]
 civilites = []
 situations = []
-presences = []
+presences:any = []
 lowerThan12 = true
+totalRecords
+loadedPresences:any=[]
+loadPresence(event){
+  this.event.filters=event.filters
+  if(event.filters && this.sqlService.getDetailsFilter(event.filters)!=''){
+    this.filter.option2=this.sqlService.getDetailsFilter(event.filters)
+  }else{
+    this.filter.option2=''
+  }
+  try{
+    this.loading = true;
+    this.filter.from = event.first;
+    this.filter.to = event.first+event.rows;
+    this.getLength();
+    this.getPresence();
+    setTimeout(() => {
+      if (this.presences) {
+        this.loadedPresences = this.presences;
+        this.loading = false;
+      }
+    }, 1000);
+  }catch(err){
+    console.log(err)
+  }
+}
+presencesExport:any=[]
+getLength(){
+  this.presenceService.getLength(this.filter).subscribe(res=>{
+    console.log(res)
+    this.totalRecords=res[0].total
+  })
+}
+getPresence(){
+  console.log(this.filter)
+  this.presenceService.getWithFilter(this.filter).subscribe(result=>{
+    console.log(result)
+    this.presences = result
+  })
+}
   ngOnInit() {
-    this.presenceService.getAll().subscribe(result=>{
-      this.presences = [result]
-      this.loading = false
-    })
+    this.getPresence();
     this.ouvriersService.getCaporal().subscribe(caporals=>{
       for(var i=0;i<caporals['length'];i++){
         this.caporals[i] = {label:caporals[i].mat+":"+caporals[i].nom+" "+caporals[i].prenom,value:caporals[i].id}
       }
     })
-    this.selectedOuvriers=[]
+    var lazyEvent={
+      first: 0,
+      rows: 10,
+      filters:[]
+    }
+
+    this.loadPresence(lazyEvent)
+    this.selectedPresences=[]
     console.log(this.swalInteractions)
     this.ids=[]
     this.cols = [
-      { field: 'Matricule', header: 'matricule' },
+      { field: 'Mat', header: 'matricule' },
       { field: 'Nom', header: 'nom' },
       { field: 'Prenom', header: 'prenom' },
       { field: 'Entree_Sortie', header: 'entreeSortie' },
@@ -301,7 +347,7 @@ lowerThan12 = true
       { field: 'Caporale', header: 'filtreCaporal' }
   ];
   this._selectedColumns = [
-    { field: 'Matricule', header: 'matricule' },
+    { field: 'Mat', header: 'matricule' },
     { field: 'Nom', header: 'nom' },
     { field: 'Prenom', header: 'prenom' },
     { field: 'Entree_Sortie', header: 'entreeSortie' },
@@ -314,8 +360,9 @@ lowerThan12 = true
   }
 
   setMyStyles() {
+    let width=(100/this.selectedColumns.length)+2;
     let styles = {
-      'width':'7rem',
+      'width':width+"%",
     };
     return styles;
   }
@@ -346,60 +393,83 @@ lowerThan12 = true
   delete(id){
     console.log(id)
     this.getSwalInteractions()
-   
+    Swal.fire({
+      title: this.swalInteractions.suppression.titreVal,
+      text: this.swalInteractions.suppression.descriptionVal,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      cancelButtonText: this.swalInteractions.annuler,
+      confirmButtonText:  this.swalInteractions.ok
+    }).then((result) => {
+      if (result.value) {
+        this.presenceService.deleteOne(id).subscribe(res=>{
+          console.log(res)
+          if(res[0].message=="ajout reussi"){
+            Swal.fire(
+              this.swalInteractions.suppression.titreVal,
+              this.swalInteractions.modification.description,
+              'success'
+            )
+            this.ngOnInit()
+          }else{
+            Swal.fire({
+              icon: 'error',
+              title:  this.swalInteractions.suppression.titreErr,
+              text: this.swalInteractions.modification.descriptionErr,
+            })
+          }
+        })
+      }
+    })
   }
+  event = {first:0,rows:10,filters:[]}
   //lors du changement de la parcelle il recupère et affiche le type du produit
   onChange(e){
-
+  }
+  globalSearch=''
+  onInputSearch(){
+    if(this.globalSearch){
+      this.filter.option1=this.globalSearch
+    }else{
+      this.filter.option1='';
+    }
+    this.loadPresence(this.event)
   }
   // Début exportation des déclaration de la récolte
-  exportPdf() {
-    let columns=[
-      { dataKey: 'Mat', header: 'Matricule' },
-      { dataKey: 'Nom', header: 'Nom' },
-      { dataKey: 'Prenom', header: 'Prenom' },
-      { dataKey: 'CIN', header: 'CIN' },
-      { dataKey: 'CNSS', header: 'N CNSS' },
-      { dataKey: 'Tel', header: 'N téléphone' },
-      { dataKey: 'Email', header: 'Email' },
-      { dataKey: 'Civilite', header: 'Civilité' },
-      { dataKey: 'Adr', header: 'Addresse' },
-      { dataKey: 'Dat_Nai', header: 'Date de naissance' },
-      { dataKey: 'Situ_Fam', header: 'Situation familiale' },
-      { dataKey: 'NBEnft', header: 'Nombre d\'enfants' },
-      { dataKey: 'Niveau_scolaire', header: 'Niveau scolaire' },
-      { dataKey: 'Fonction_Personnel', header: 'Fonction' }
-    ]
-    this.exportService.setTable(this.transformDate(this.ouvriers))
-    this.exportService.exportPdf(columns,'ouvriers.pdf')
-  }
-  printPdf(){
-   /* let columns=[]
-    if(localStorage.getItem('lang')!='ar'){
-      this.translateService.get(['rendement']).subscribe(translations=>{
-        this.selectedColumns.forEach(element=>{
-          columns.push( { header: translations.rendement[element.header], dataKey: element.field})
-        })
-      })
-    }else{
-      this.selectedColumns.forEach(element=>{
-       // columns.push( { header: this.translateService.translations.fr.rendement[element.header], dataKey: element.field})
-      })
-    }*/
+ async exportPdf() {
     let columns=[
       { dataKey: 'Mat', header: 'Matricule' },
       { dataKey: 'Nom', header: 'Nom' },
       { dataKey: 'Prenom', header: 'Prénom' },
-      { dataKey: 'CIN', header: 'CIN' },
-      { dataKey: 'CNSS', header: 'N CNSS' },
-      { dataKey: 'Tel', header: 'N téléphone' },
-      { dataKey: 'Dat_Nai', header: 'Date de naissance' },
-      { dataKey: 'NBEnft', header: 'Nombre d\'enfants' },
-      { dataKey: 'Niveau_scolaire', header: 'Niveau scolaire' },
-      { dataKey: 'Fonction_Personnel', header: 'Fonction' }
+      { dataKey: 'Entree_Sortie', header: 'Entrée sortie' },
+      { dataKey: 'Date_entree', header: 'Date entrée' },
+      { dataKey: 'Date_Sortie', header: 'Date sortie' },
+      { dataKey: 'Heure_entree', header: 'Heure entrée' },
+      { dataKey: 'Heure_sortie', header: 'Heure sortie' },
+      { dataKey: 'Caporale', header: 'Filtre du caporal' }
     ]
-    this.exportService.setTable(this.transformDate(this.ouvriers))
-    this.exportService.printPdf(columns)
+    this.presenceService.getAll().subscribe(res=>{
+      this.presencesExport = res
+      this.exportService.setTable(this.transformDate(this.presencesExport))
+      this.exportService.exportPdf(columns,'presences.pdf')
+    })
+  }
+  printPdf(){
+    let columns=[
+      { dataKey: 'Mat', header: 'Matricule' },
+      { dataKey: 'Nom', header: 'Nom' },
+      { dataKey: 'Prenom', header: 'Prénom' },
+      { dataKey: 'Entree_Sortie', header: 'Entrée sortie' },
+      { dataKey: 'Date_entree', header: 'Date entrée' },
+      { dataKey: 'Date_Sortie', header: 'Date sortie' },
+      { dataKey: 'Heure_entree', header: 'Heure entrée' },
+      { dataKey: 'Heure_sortie', header: 'Heure sortie' },
+      { dataKey: 'Caporale', header: 'Filtre du caporal' }
+    ]
+      this.exportService.setTable(this.transformDate(this.presences))
+      this.exportService.printPdf(columns)
   }
   fields= [ 'Mat'  ,
     'Nom', ,
@@ -431,30 +501,28 @@ lowerThan12 = true
     'Pers_Ancte',
     'En_exercice',
     'Salaire_Base']
-  exportExcel() {
+  async exportExcel() {
     let table = []
-    for(var i=0;i<this.transformDate(this.ouvriers).length;i++){
+    this.presenceService.getAll().subscribe(res=>{
+      this.presencesExport = res
+    for(var i=0;i<this.transformDate(this.presencesExport).length;i++){
       table[i]={
-        'Matricule': this.ouvriers[i].Mat,
-        'Nom':this.ouvriers[i].Nom,
-        'Prénom':this.ouvriers[i].Prenom,
-        'CIN':this.ouvriers[i].CIN,
-        'N CNSS':this.ouvriers[i].CNSS,
-        'N téléphone':this.ouvriers[i].Tel,
-        'Email': this.ouvriers[i].Email,
-        'Civilité': this.ouvriers[i].Civilite,
-        'Addresse':this.ouvriers[i].adr,
-        'Date de naissance':this.transformDate(this.ouvriers)[i].Dat_Nai,
-        'Situation familiale':this.ouvriers[i].Dat_Nai,
-        'Nombre d\'enfants': this.ouvriers[i].NBEnft,
-        'Niveau scolaire': this.ouvriers[i].Niveau_scolaire,
-        'Fonction': this.ouvriers[i].Fonction_Personnel,
+        'Matricule': this.presencesExport[i].Mat,
+        'Nom':this.presencesExport[i].Nom,
+        'Prénom':this.presencesExport[i].Prenom,
+        'Entrée sortie':this.presencesExport[i].Entree_Sortie,
+        'Date entrée':this.presencesExport[i].Date_entree,
+        'Date sortie':this.presencesExport[i].Date_Sortie,
+        'Heure entrée': this.presencesExport[i].Heure_entree,
+        'Heure sortie': this.presencesExport[i].Heure_sortie,
+        'Filtre du caporal':this.presencesExport[i].Caporale
       }
     }
-    this.exportService.exportExcel('declarationsRecolte',table)
+    this.exportService.exportExcel('presences',table)
+  })
   }
     generateQR(){
-      this.selectedOuvriers.forEach(element=>{
+      this.selectedPresences.forEach(element=>{
         this.exportService.printQR()
       })
     }
@@ -506,7 +574,7 @@ lowerThan12 = true
   }
   generateCodes(){
       this.getSwalInteractions()
-      this.selectedOuvriers.forEach(element=>{
+      this.selectedPresences.forEach(element=>{
         console.log(element)
         this.qrData.push(JSON.stringify({
           matricule:element.Mat,
@@ -518,12 +586,13 @@ lowerThan12 = true
       })
   }
   //supprimer plusieurs declarations à la fois
-  deleteselectedOuvriers(){
+  deleteselectedPresences(){
+    console.log()
     this.getSwalInteractions()
     let ids = []
-    this.selectedOuvriers.forEach(element=>{
+    this.selectedPresences.forEach(element=>{
       console.log(element)
-      ids.push(element.ID)
+      ids.push(element.IDPresence)
     })
     console.log(ids)
     if(ids.length==1){
@@ -531,7 +600,7 @@ lowerThan12 = true
     }else{
       Swal.fire({
         title: this.swalInteractions.suppressionPlusieurs.titreVal,
-        text: this.swalInteractions.suppressionPlusieurs.descriptionVal + "("+this.selectedOuvriers.length+")",
+        text: this.swalInteractions.suppressionPlusieurs.descriptionVal + "("+this.selectedPresences.length+")",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -540,7 +609,21 @@ lowerThan12 = true
         confirmButtonText: this.swalInteractions.ok
       }).then((result) => {
         if (result.value) {
-          
+          this.presenceService.delete(ids).subscribe(res=>{
+            if(res[0].message=="ajout reussi"){
+              Swal.fire(
+                this.swalInteractions.suppressionPlusieurs.titre,
+                this.swalInteractions.suppressionPlusieurs.description,
+                'success')
+              this.ngOnInit()
+            }else{
+              Swal.fire({
+                icon: 'error',
+                title: this.swalInteractions.suppressionPlusieurs.titreErr,
+                text:   this.swalInteractions.suppressionPlusieurs.descriptionErr
+              })
+            }
+          })
         }
       })
     }
@@ -549,9 +632,9 @@ lowerThan12 = true
   //selectionner toutes les declarations
   showOnlySelected(event) {
     if(event.checked){
-      this.selectedOuvriers = this.ouvriers
+      this.selectedPresences = this.ouvriers
     }else{
-      this.selectedOuvriers=[]
+      this.selectedPresences=[]
     }
   }
   copy(){

@@ -6,46 +6,81 @@ import { Injectable } from '@angular/core';
 export class SqlRequestService {
 
   constructor() { }
-  filter=''
-  filterLike=''
+
+  filter='';
+
+  filterLike='';
+
   getDataGlobalSearchLike(selectedColumns,globalSearch){
-    this.filter=''
+    this.filter='';
     selectedColumns.forEach(element => {
       if(selectedColumns.length-1==selectedColumns.indexOf(element) && element.field!='En_exercice' 
-      && element.field!='Contractuel' && element.field!='formation_phyto'){
+      && element.field!='Contractuel' && element.field!='formation_phyto'&&element.field!='Caporale'){
           this.filter+=' '+element.field+" like '%"+globalSearch+"%' "
-      }else if(selectedColumns.length-1!=selectedColumns.indexOf(element) && element.field!='En_exercice' 
-      && element.field!='Contractuel' && element.field!='formation_phyto'){
+      }
+      else if(selectedColumns.length-1!=selectedColumns.indexOf(element) && element.field!='En_exercice' 
+      && element.field!='Contractuel' && element.field!='formation_phyto'&&element.field!='Caporale'){
           this.filter+=' '+element.field+" like '%"+globalSearch+"%' or"
+      }else if(selectedColumns.length-1==selectedColumns.indexOf(element) &&element.field=='Caporale' ){
+        this.filter+=' Presence.'+element.field+" like '%"+globalSearch+"%' "
+      }else if(selectedColumns.length-1!=selectedColumns.indexOf(element) &&element.field=='Caporale' ){
+        this.filter+=' Presence.'+element.field+" like '%"+globalSearch+"%' or"
       }
     }); 
     return this.filter;
   }
+
   getDetailsFilter(filters){
     var filterLike = ''
     if(filters){
     Object.keys(filters).forEach(function(key,index) {
       filters[key].forEach(element => {
-        if(element.value){
-          if(element.matchMode=='startsWith'){
-            filterLike+=key +" like '"+element.value+"%' and "
+        if(key=='Caporale'){
+          key='Presence.Caporale'
+          if(element.value){
+            if(element.matchMode=='startsWith'){
+              filterLike+=key +" like '"+element.value+"%' and "
+            }
+            else if(element.matchMode=='endsWith'){
+              filterLike+=key +" like '%"+element.value+"' and "
+            }
+            else if(element.matchMode=='contains'){
+             filterLike+=key +" like '%"+element.value+"%' and "
+             }else if(element.matchMode=='notContains'){
+               filterLike+=key +" not like '%"+element.value+"%' and "
+             }else if(element.matchMode=='equals'){
+               filterLike+=key +" like '"+element.value+"' and "
+             }else if(element.matchMode=='notEquals'||element.matchMode=='isNot'){
+               filterLike+=key +" not like '"+element.value+"' and "
+             }
+             else if(element.matchMode=='before'){
+              filterLike+=key +" < '"+element.value+"' and "
+            }else if(element.matchMode=='after'){
+              filterLike+=key +" > '"+element.value+"' and "
+            }
           }
-          else if(element.matchMode=='endsWith'){
-            filterLike+=key +" like '%"+element.value+"' and "
-          }
-          else if(element.matchMode=='contains'){
-           filterLike+=key +" like '%"+element.value+"%' and "
-           }else if(element.matchMode=='notContains'){
-             filterLike+=key +" not like '%"+element.value+"%' and "
-           }else if(element.matchMode=='equals'){
-             filterLike+=key +" like '"+element.value+"' and "
-           }else if(element.matchMode=='notEquals'||element.matchMode=='isNot'){
-             filterLike+=key +" not like '"+element.value+"' and "
-           }
-           else if(element.matchMode=='before'){
-            filterLike+=key +" < '"+element.value+"' and "
-          }else if(element.matchMode=='after'){
-            filterLike+=key +" > '"+element.value+"' and "
+        }else{
+          if(element.value){
+            if(element.matchMode=='startsWith'){
+              filterLike+=key +" like '"+element.value+"%' and "
+            }
+            else if(element.matchMode=='endsWith'){
+              filterLike+=key +" like '%"+element.value+"' and "
+            }
+            else if(element.matchMode=='contains'){
+             filterLike+=key +" like '%"+element.value+"%' and "
+             }else if(element.matchMode=='notContains'){
+               filterLike+=key +" not like '%"+element.value+"%' and "
+             }else if(element.matchMode=='equals'){
+               filterLike+=key +" like '"+element.value+"' and "
+             }else if(element.matchMode=='notEquals'||element.matchMode=='isNot'){
+               filterLike+=key +" not like '"+element.value+"' and "
+             }
+             else if(element.matchMode=='before'){
+              filterLike+=key +" < '"+element.value+"' and "
+            }else if(element.matchMode=='after'){
+              filterLike+=key +" > '"+element.value+"' and "
+            }
           }
         }
       });

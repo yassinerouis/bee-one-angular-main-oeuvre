@@ -16,8 +16,8 @@
       </div>
     </div>
     <div class="row">
-      <p-table #dt [value]="presences" [scrollable]="true" [style]="{width:'95%'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
-        [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines"
+      <p-table #dt [value]="loadedPresences" [lazy]="true" (onLazyLoad)="loadPresence($event)" [style]="{width:'100%'}" [columns]="selectedColumns" dataKey="id" [rows]="10" [showCurrentPageReport]="true"
+        [rowsPerPageOptions]="[10,25,50]" [loading]="loading" styleClass="p-datatable-customers p-datatable-gridlines" [totalRecords]="totalRecords"
         [paginator]="true" currentPageReportTemplate="{{'primeng.afficherDeA'|translate}}"
         [globalFilterFields]="fields"
         >
@@ -32,7 +32,7 @@
           <div class="p-d-flex">
             <span class="p-input-icon-left p-ml-auto">
               <i class="pi pi-search"></i>
-              <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{'primeng.recherche' |translate}}" />
+              <input pInputText type="text" (input)="onInputSearch()" [(ngModel)]="globalSearch" placeholder="{{'primeng.recherche' |translate}}" />
             </span>
            <p-multiSelect [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" (onChange)="selectColumn($event)"
             selectedItemsLabel="{0} {{'primeng.selectedColumns'|translate}}" [style]="{minWidth: '200px'}" placeholder="{{'primeng.choiceColumns'|translate}}"
@@ -48,8 +48,7 @@
               </div>
             </ng-template>
           </p-multiSelect>
-            <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedOuvriers.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedOuvriers()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
-            <button *ngIf="selectedOuvriers.length>0" pButton pRipple label="{{'mainOeuvre.codeBarre'|translate}}({{selectedOuvriers.length}})" icon="pi pi-print" class="p-button-success ml-1 mr-1" (click)="generateCodes()" [disabled]="!selectedOuvriers || !selectedOuvriers.length"></button>
+            <button *ngIf="selectedPresences.length>0" pButton pRipple label="{{'global.supprimer'|translate}}({{selectedPresences.length}})" icon="pi pi-trash" class="p-button-danger" (click)="deleteselectedPresences()" [disabled]="!selectedPresences || !selectedPresences.length"></button>
           </div>
         </ng-template>
         <ng-template pTemplate="header" let-columns>
@@ -58,14 +57,10 @@
               <p-checkbox (onChange)="showOnlySelected($event)"></p-checkbox>
             </th>
             <th *ngFor="let col of columns">
-              <div *ngIf="col.field != 'Dat_Nai' && col.field !='Date_Embauche'"
+              <div 
               class="p-d-flex p-jc-between p-ai-center">
               {{'mainOeuvre.'+col.header |translate}}
                 <p-columnFilter type="text" field="{{col.field}}" display="menu"></p-columnFilter>
-              </div>
-              <div *ngIf="col.field == 'Dat_Nai' ||col.field =='Date_Embauche'" class="p-d-flex p-jc-between p-ai-center">
-                {{'mainOeuvre.'+col.header | translate}}
-                <p-columnFilter type="date" field="{{col.field}}" display="menu"></p-columnFilter>            
               </div>
             </th>
             <th>
@@ -78,7 +73,7 @@
         <ng-template pTemplate="body" let-declaration let-columns="columns">
           <tr>
             <td>
-              <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedOuvriers"></p-checkbox>
+              <p-checkbox name="groupname" [value]="declaration" [(ngModel)]="selectedPresences"></p-checkbox>
             </td>
             <td *ngFor="let col of columns">
               <div *ngIf="col.field=='Civilite'&&civilites[declaration[col.field]-1]" class="text-center"> {{civilites[declaration[col.field]-1].label }}</div>
@@ -90,7 +85,7 @@
             <td class="text-center">
               <button pButton pRipple type="button" (click)="consulter(declaration.ID)" icon="pi pi-eye" pTooltip="{{'global.consulter'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-success"></button>
               <button pButton pRipple type="button" (click)="edit(declaration.ID)" icon="pi pi-pencil" pTooltip="{{'global.editer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning"></button>      
-              <button pButton pRipple type="button" (click)="delete(declaration.ID)" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
+              <button pButton pRipple type="button" (click)="delete(declaration.IDPresence)" icon="pi pi-trash" pTooltip="{{'global.supprimer'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-danger"></button>
             </td>
           </tr>
         </ng-template>
@@ -151,25 +146,4 @@
         <button *ngIf="forEdit  && !this.consult" class="p-button-raised p-button-warning" pButton type="button" label="{{'global.modifier'|translate}}" (click)="update()" icon="pi pi-check"></button>
         <button  pButton type="button" class="p-button-raised p-button-secondary" label="{{'global.annuler'|translate}}" (click)="annuler()" icon="pi pi-times"></button>
         </div>
-  </div>
-  <div *ngIf="qrCode" >
-    <div class="row">
-      <div class="col-md-10">
-        <h5 class="mb-4">{{ 'mainOeuvre.codeBarre' | translate }}</h5>
-      </div>
-      <div class="col-md-1">  
-        <button pButton pRipple type="button" (click)="generateQR()" icon="pi pi-file-pdf" label="{{'global.pdf'|translate}}" tooltipPosition="bottom" class="p-button-rounded p-button-warning p-mr-2"></button>
-      </div>
-      <div class="col-md-1">
-        <button type="button" pButton pRipple icon="pi pi-times" (click)="qrCode=!qrCode" class="p-button-danger p-ml-auto" pTooltip="{{'global.fermer'|translate}}" tooltipPosition="bottom"></button>
-      </div>
-    </div>
-  <div class="row">
-    <div *ngFor="let data of qrData; index as i;" class="col-md-4 mt-2 mb-2">
-      {{ 'mainOeuvre.matricule' | translate }} : {{ selectedOuvriers[i].Mat }}  => {{ selectedOuvriers[i].Nom }} {{ selectedOuvriers[i].Prenom }}
-      <div id="qr{{selectedOuvriers[i].Mat}}">
-      <qr-code [value]="data" size="300"></qr-code>
-    </div>
-    </div>
-  </div>
   </div>
